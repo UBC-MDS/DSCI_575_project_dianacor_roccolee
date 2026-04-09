@@ -1,0 +1,12 @@
+python-dotenv #==1.2.2
+# dotenv==0.9.9
+
+# pandas==3.0.1
+# numpy==2.4.2
+# vegafusion==2.0.3
+
+# shiny==1.5.1
+# shinywidgets>=0.3.0
+
+# pytest>=8.0.0
+# pytest-playwright>=0.5.0

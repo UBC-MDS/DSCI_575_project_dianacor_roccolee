@@ -1,0 +1,11 @@
+# conda env update --file environment.yml --prune
+# conda remove -n environment.yml --all
+
+name: chartify
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -r requirements.txt
