@@ -3,4 +3,4 @@ data/raw/*
 !data/raw/.gitkeep # to keep directory in git
 
 data/processed/*
-!data/processed/sample.parquet # to have an available sample for minimal-version testing
+!data/processed/*subset.parquet #  samples of dataset for minimal-version testing

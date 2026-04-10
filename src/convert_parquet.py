@@ -38,9 +38,14 @@ def main():
     args = parse_args()
     output  = Path(args.out_dir)
     reviews_raw = str(output / "reviews_raw.parquet")
+    reviews_subset = str(output / "reviews_raw_subset.parquet")
+
     meta_raw    = str(output / "meta_raw.parquet")
+    meta_subset = str(output / "meta_raw_subset.parquet")
+
     merged_out  = str(output / "merged.parquet")
-    sample_out  = str(output / "sample.parquet")
+    merged_subset  = str(output / "merged_subset.parquet")
+
 
     con = duckdb.connect()
 
@@ -54,7 +59,7 @@ def main():
                             ))
         TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"meta data exported both as full-sized parquet file")
+    print(f"meta data exported as full-sized parquet file")
 
     # Reviews
     con.execute(f"""
@@ -88,7 +93,6 @@ def main():
 
 # exporting only the first "subset_sample_size" number of rows (via cmd argument)
     # Meta subset
-    meta_subset = meta_raw.replace('.parquet', '_subset.parquet')
     con.execute(f"""
         COPY (SELECT * FROM read_parquet('{meta_raw}')
               LIMIT {args.subset_sample_size})
@@ -97,7 +101,6 @@ def main():
     print(f"lean subset of the full-sized meta file exported.")
 
     # Reviews subset
-    reviews_subset = reviews_raw.replace('.parquet', '_subset.parquet')
     con.execute(f"""
         COPY (SELECT * FROM read_parquet('{reviews_raw}')
               LIMIT {args.subset_sample_size})
@@ -117,7 +120,7 @@ def main():
             FROM read_parquet('{merged_out}') as meta
             INNER JOIN subset_N_products USING (parent_asin)
         )
-        TO '{sample_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
+        TO '{merged_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
     print(f"subset of full-sized merged (review + meta) file exported.")
 
