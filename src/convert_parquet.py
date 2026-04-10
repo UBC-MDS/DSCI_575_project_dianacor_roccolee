@@ -1,7 +1,7 @@
 
 """
 Usage:
-    python pipeline.py # to convert raw downloaded jsonl.gz files to parquet, and create a sample subset for quicker iteration
+    python convert_parquet.py # to convert raw downloaded jsonl.gz files to parquet, and create a sample subset for quicker iteration
 References: 
     ilyamusabirov/525eda_duckdb.md: https://gist.github.com/ilyamusabirov/9491e5ce6ae2fc63d6222609cebd0588
 """
@@ -15,16 +15,14 @@ import duckdb
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--reviews", 
-                   default="../data/raw/Electronics.jsonl.gz")
+                   default="data/raw/Electronics.jsonl.gz")
     p.add_argument("--meta", 
-                   default= "../data/raw/meta_Electronics.jsonl.gz")
+                   default= "data/raw/meta_Electronics.jsonl.gz")
     p.add_argument("--out-dir", 
-                   default="../data/processed")
-    p.add_argument("--row_limit",   type=int, 
-                    default=20000, help="Max rows from each source (default: 20000)")
+                   default="data/processed")
     p.add_argument("--subset_sample_size",  type=int, 
                    default=500,   
-                   help="Unique parent_asin keys in sample (default: 500)")
+                   help="Unique parent_asin keys in sample after being merged, & number of rows for each main source file")
     p.add_argument("--review-cols", 
                    nargs="+", #to accept multiple columns as input by spaces and then add them as a list to args 
                    default=["title", "helpful_vote"],
@@ -46,23 +44,29 @@ def main():
 
     con = duckdb.connect()
 
-# 1) convert files to parquet (x2 --> meta + reviews) ############################################################
+#################### 1) convert files to parquet (x2 --> meta + reviews) #############################
 
     # Meta
     con.execute(f"""
-        COPY (SELECT * FROM read_json_auto('{args.meta}') LIMIT {args.limit})
+        COPY (SELECT * FROM read_json_auto('{args.meta}',
+                            ignore_errors=true
+                            -- sample_size=-1 "forces to scan whole file before inferring types — slow but more accurate"
+                            ))
         TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"meta data exported as a parquet file")
+    print(f"meta data exported both as full-sized parquet file")
 
     # Reviews
     con.execute(f"""
-        COPY (SELECT * FROM read_json_auto('{args.reviews}') LIMIT {args.limit})
+        COPY (SELECT * FROM read_json_auto('{args.reviews}',
+                            ignore_errors=true
+                            -- sample_size=-1 "forces to scan whole file before inferring types — slow but more accurate"
+                            ))
         TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"reviews data exported as a parquet file")
+    print(f"reviews data exported as full-sized parquet file")
 
-# 2) merge files on parent_asin key ############################################################
+################################ 2) merge files on parent_asin key ##########################################
 
    # need to convert desired columns to one large string for SQL
     raw_cols = ", ".join(f"raw.{col}" for col in args.review_cols)
@@ -78,9 +82,45 @@ def main():
         TO '{merged_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
     
-    print(f"merged meta and reviews exported to {merged_out} as a parquet file")
+    print(f"merged meta and reviews data and exported")
 
-# 3) create subset ############################################################
+########################################## 3) create merged subset ##########################################
+
+# exporting only the first "subset_sample_size" number of rows (via cmd argument)
+    # Meta subset
+    meta_subset = meta_raw.replace('.parquet', '_subset.parquet')
+    con.execute(f"""
+        COPY (SELECT * FROM read_parquet('{meta_raw}')
+              LIMIT {args.subset_sample_size})
+        TO '{meta_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+    print(f"lean subset of the full-sized meta file exported.")
+
+    # Reviews subset
+    reviews_subset = reviews_raw.replace('.parquet', '_subset.parquet')
+    con.execute(f"""
+        COPY (SELECT * FROM read_parquet('{reviews_raw}')
+              LIMIT {args.subset_sample_size})
+        TO '{reviews_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+    print(f"lean subset of the full-sized reviews file exported.")
+
+# exporting rows only belonging to the first "subset_sample_size" number of unique parent_asin keys (via cmd argument)
+    con.execute(f"""
+        COPY (
+            WITH subset_N_products AS (
+                SELECT DISTINCT parent_asin
+                FROM read_parquet('{merged_out}')
+                LIMIT {args.subset_sample_size}
+            )
+            SELECT meta.* 
+            FROM read_parquet('{merged_out}') as meta
+            INNER JOIN subset_N_products USING (parent_asin)
+        )
+        TO '{sample_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+    print(f"subset of full-sized merged (review + meta) file exported.")
+
 
 
     con.close()
