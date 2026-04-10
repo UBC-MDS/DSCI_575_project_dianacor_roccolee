@@ -53,12 +53,14 @@ def main():
         COPY (SELECT * FROM read_json_auto('{args.meta}') LIMIT {args.limit})
         TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
+    print(f"meta data exported as a parquet file")
 
     # Reviews
     con.execute(f"""
         COPY (SELECT * FROM read_json_auto('{args.reviews}') LIMIT {args.limit})
         TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
+    print(f"reviews data exported as a parquet file")
 
 # 2) merge files on parent_asin key ############################################################
 
@@ -75,8 +77,13 @@ def main():
         )
         TO '{merged_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
+    
+    print(f"merged meta and reviews exported to {merged_out} as a parquet file")
 
 # 3) create subset ############################################################
+
+
+    con.close()
 
 if __name__ == "__main__":
     main()
