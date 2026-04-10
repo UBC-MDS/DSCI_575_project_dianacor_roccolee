@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 from utils import * 
-# pip install requests tqdm
 
 def parse_args():
     p = argparse.ArgumentParser()

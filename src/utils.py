@@ -17,9 +17,9 @@ def read_review_txt_columns(filepath = "notebooks/review_columns.txt"):
     
 
 ############################## For huggingface_datadownload.py script ##############################
-import os
 import requests
 from tqdm import tqdm
+from pathlib import Path
 
 def file_name_source_map(base_url, subset, meta, reviews):
     files = {}
@@ -31,7 +31,7 @@ def file_name_source_map(base_url, subset, meta, reviews):
 
 
 def download_request(specific_url, output, filename):
-    fullpath = os.path.join(output, filename)
+    fullpath = Path(output) / filename
 
     if fullpath.exists(): # prevent from a taxing re-download
         print(f"Already exists, skipped: {filename}")

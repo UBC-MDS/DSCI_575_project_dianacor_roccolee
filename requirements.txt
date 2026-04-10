@@ -1,7 +1,13 @@
+requests 
+tqdm
+
+duckdb
+
 python-dotenv #==1.2.2
 faiss-cpu
 sentence-transformers
-duckdb
+
+
 # dotenv==0.9.9
 
 # pandas==3.0.1
