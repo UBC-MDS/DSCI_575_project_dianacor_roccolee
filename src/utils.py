@@ -65,3 +65,21 @@ def semantic_search(docs, model, index, query, k=5):
             'distance': dist
         })
     return results
+
+############################## Query using BM25 search ##############################
+import string
+import nltk
+
+def tokenize(document) -> list[str]:
+    """
+    Custom tokenized function for BM25.
+    Does whitespace split, makes lowercase, remove punctuation and stopwords.
+    """
+    nltk.download("stopwords", quiet=True)
+    STOP_WORDS = set(stopwords.words("english"))
+
+    document = document.lower()
+    document = document.translate(str.maketrans("", "", string.punctuation)) # removes punctuation 
+    tokens = document.split()
+    tokens = [t for t in tokens if t not in STOP_WORDS]
+    return tokens
