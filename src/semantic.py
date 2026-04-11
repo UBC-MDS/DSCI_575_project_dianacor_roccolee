@@ -1,3 +1,6 @@
+# python src/semantic.py --query "sony headphones"
+# OR python src/semantic.py --query 
+
 import argparse
 import pandas as pd
 from sentence_transformers import SentenceTransformer
