@@ -1,11 +1,16 @@
 requests 
 tqdm
-
+pandas
 duckdb
-
+pyarrow
+numpy
 python-dotenv #==1.2.2
 faiss-cpu
 sentence-transformers
+altair
+shiny==1.5.1
+shinywidgets>=0.3.0
+
 
 
 # dotenv==0.9.9
@@ -14,8 +19,6 @@ sentence-transformers
 # numpy==2.4.2
 # vegafusion==2.0.3
 
-# shiny==1.5.1
-# shinywidgets>=0.3.0
 
 # pytest>=8.0.0
 # pytest-playwright>=0.5.0
