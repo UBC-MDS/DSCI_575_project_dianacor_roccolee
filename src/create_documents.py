@@ -1,5 +1,3 @@
-from utils import *
-
 import argparse
 from pathlib import Path
 import duckdb
@@ -20,18 +18,19 @@ def main():
     QUERY = f"""
     SELECT
         parent_asin,
-        ANY_VALUE(title) AS product_title,
+        LEFT(ANY_VALUE(title), 100) AS product_title, -- only first 100 characters of title(they are quite long)
         CONCAT_WS(' ',
             ANY_VALUE(main_category), -- fine b/c identical across all duplicated rows
             ANY_VALUE(title),
-            -- flatten the features array into a single space-separated string
-            ARRAY_TO_STRING(ANY_VALUE(features), ' ')
+            ARRAY_TO_STRING(ANY_VALUE(features), ' '), 
+            ARRAY_TO_STRING(ANY_VALUE(description),' '),
+            ARRAY_TO_STRING(MAP_KEYS(ANY_VALUE(details)), ' ') || ' ' || ARRAY_TO_STRING(MAP_VALUES(ANY_VALUE(details)), ' ') -- flattening the details which is a MAP(VARCHAR, JSON) into a single string of keys and values
         ) AS document
     FROM read_parquet('{input_path.as_posix()}')
     WHERE parent_asin IS NOT NULL
     GROUP BY parent_asin
     """
-    
+
     con = duckdb.connect()
     con.execute(
         f"COPY ({QUERY}) TO '{output_path.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)",
