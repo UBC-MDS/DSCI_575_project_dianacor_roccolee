@@ -1,5 +1,7 @@
+# conda  env create -f environment.yml 
 # conda env update --file environment.yml --prune
 # conda remove -n environment.yml --all
+# conda env export --from-history > requirements_fromhistory.txt
 
 name: amazon-recommender
 channels:
