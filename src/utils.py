@@ -51,3 +51,17 @@ def download_request(specific_url, output, filename):
             bar.update(len(chunk))
 
     print(f"Saved: {filename} in {output}")
+
+############################## Query using semantic search ##############################
+def semantic_search(docs, model, index, query, k=5):
+    query_embedding = model.encode([query]).astype('float32')
+    distances, indices = index.search(query_embedding, k)
+    
+    results = []
+    for dist, idx in zip(distances[0], indices[0]):
+        results.append({
+            'parent_asin': docs.iloc[idx]['parent_asin'],
+            'product_title': docs.iloc[idx]['product_title'],
+            'distance': dist
+        })
+    return results
