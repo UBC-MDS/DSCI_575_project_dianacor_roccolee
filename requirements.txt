@@ -1,4 +1,5 @@
 requests 
+ipykernel
 tqdm
 pandas
 duckdb
@@ -6,6 +7,8 @@ pyarrow
 numpy
 python-dotenv #==1.2.2
 faiss-cpu
+rank_bm25
+nltk
 sentence-transformers
 altair
 shiny==1.5.1

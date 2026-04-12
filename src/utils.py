@@ -1,3 +1,12 @@
+import requests
+from tqdm import tqdm
+from pathlib import Path
+import string
+import nltk
+from nltk.corpus import stopwords
+
+nltk.download("stopwords", quiet=True)
+STOP_WORDS = set(stopwords.words("english"))
 
 ############################## For convert_parquet.py and create_documents.py script ##############################
 
@@ -17,9 +26,7 @@ def read_review_txt_columns(filepath = "notebooks/review_columns.txt"):
     
 
 ############################## For huggingface_datadownload.py script ##############################
-import requests
-from tqdm import tqdm
-from pathlib import Path
+
 
 def file_name_source_map(base_url, subset, meta, reviews):
     files = {}
@@ -67,16 +74,14 @@ def semantic_search(docs, model, index, query, k=5):
     return results
 
 ############################## Query using BM25 search ##############################
-import string
-import nltk
+
+
 
 def tokenize(document) -> list[str]:
     """
     Custom tokenized function for BM25.
     Does whitespace split, makes lowercase, remove punctuation and stopwords.
     """
-    nltk.download("stopwords", quiet=True)
-    STOP_WORDS = set(stopwords.words("english"))
 
     document = document.lower()
     document = document.translate(str.maketrans("", "", string.punctuation)) # removes punctuation 
