@@ -2,7 +2,7 @@ import argparse
 import pickle
 import pandas as pd
 from rank_bm25 import BM25Okapi
-from utils import tokenize
+from utils import *
 
 
 def parse_args():
@@ -16,7 +16,14 @@ def parse_args():
     parser.add_argument("--text-col",   
                         default="document")
     parser.add_argument("--name-col",   
-                        default="product_title",)
+                        default="product_title")
+    parser.add_argument("--query",
+                        default=None,
+                        help="Optional query to test after building")
+    parser.add_argument("--k",
+                        default=5,
+                        type=int,
+                        help="Number of results to return for query")
     return parser.parse_args()
 
 
@@ -41,7 +48,12 @@ def main():
 
     print(f"Everything saved to {args.output_dir}")
 
-    
+    if args.query:
+        results = bm25_search(args.query, bm25, doc_names, k=args.k)
+        for r in results:
+            print(r["product_title"])
+            print(f"Score: {r['distance']:.4f}")
+            print("---")
 
 
 if __name__ == "__main__":
