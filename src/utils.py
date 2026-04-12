@@ -75,8 +75,6 @@ def semantic_search(docs, model, index, query, k=5):
 
 ############################## Query using BM25 search ##############################
 
-
-
 def tokenize(document) -> list[str]:
     """
     Custom tokenized function for BM25.
@@ -88,3 +86,20 @@ def tokenize(document) -> list[str]:
     tokens = document.split()
     tokens = [t for t in tokens if t not in STOP_WORDS]
     return tokens
+
+
+def bm25_search(query, bm25, doc_names, k = 5):
+    tokens = tokenize(query)
+    scores = bm25.get_scores(tokens)
+    ranked_indices = sorted(range(len(scores)), 
+                            key= lambda i: scores[i], 
+                            reverse=True) # higher score is better
+    top_k_indices  = ranked_indices[:k]
+
+    results = []
+    for i in top_k_indices:
+        results.append({
+            "product_title": doc_names[i],
+            "distance": scores[i]
+        })
+    return results
