@@ -1,0 +1,48 @@
+import argparse
+import pickle
+import pandas as pd
+from rank_bm25 import BM25Okapi
+from utils import tokenize
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Build a BM25 index from a parquet file.")
+    parser.add_argument("--input",
+                        default="data/processed/product_documents.parquet",
+                        help="Path to input parquet file")
+    parser.add_argument("--output-dir", 
+                        default="data/processed/",  
+                        help="Directory to save output files")
+    parser.add_argument("--text-col",   
+                        default="document")
+    parser.add_argument("--name-col",   
+                        default="product_title",)
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    df = pd.read_parquet(args.input, columns=[args.text_col, args.name_col])
+
+    print(f"Tokenizing {len(df)} documents and building corpus")
+    tokenized_corpus = [tokenize(text) for text in df["document"]]
+    doc_names = df["product_title"].tolist()
+
+    print("Building BM25 index")
+    bm25 = BM25Okapi(tokenized_corpus)
+
+    print("Saving index")
+    with open(f"{args.output_dir}bm25_index.pkl", "wb") as f:
+        pickle.dump({"bm25": bm25, "doc_names": doc_names}, f)
+
+    print("Saving corpus")
+    with open(f"{args.output_dir}tokenized_corpus.pkl", "wb") as f:
+        pickle.dump(tokenized_corpus, f)
+
+    print(f"Everything saved to {args.output_dir}")
+
+    
+
+
+if __name__ == "__main__":
+    main()
