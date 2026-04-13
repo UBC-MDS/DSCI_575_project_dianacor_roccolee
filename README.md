@@ -54,5 +54,5 @@ python ./src/semantic.py --query "sony headphones"
 
 7. Alternatively, experiment with the search through a web app by running:
 ```bash
-shiny run ./app/query_app.py
+shiny run ./app/app.py
 ```
