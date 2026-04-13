@@ -1,10 +1,13 @@
-# DSCI_575_project_dianacor_roccolee
+# Amazon Electronics Review Search
+
+This repo uses data of Amazon product & their reviews (specifically for the Electronics category) to compare 2 different retrievals systems: BM25 (keyword-based) and Semantic (embedding-based), to search and compare product results via user queries.
 
 ## Description of Dataset
-This project uses a data set of Amazon reviews and product metadata grouped by product category. Specifically, we chose to focus our data set on products under the Electronics category. 
+This project uses a data set of Amazon reviews and product metadata grouped by product category. Specifically, we chose to focus our data set on products under the Electronics category. The purpose of this project is to use multiple different retrieval systems (like BM25 and Semantic) on this product set to retrieve relevant product based on a variety of queries. 
 The data sources can be found below:
 
 Dataset Website: https://amazon-reviews-2023.github.io/
+
 Hugging Face: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023
 
 ## Recreating Project Workflow
@@ -28,6 +31,8 @@ or alternatively:
 - Download both the reviews and meta of the *Electronics* category
 2. Move zip files to the data/raw directory
 3. Extract (unzip) files in the same directory
+- This will take very long to download. Please be patient, (ETA 45-1hr, + longer from the direct download method b/c of the server bottleneck)
+
 4. Run bellow code to convert from .jsonl / .json.gz to parquet
 ```bash
 python src/convert_parquet.py \
@@ -36,6 +41,7 @@ python src/convert_parquet.py \
   --subset_sample_size 500 
 ```
 - By default, the parquet file output will be saved in `./data/processed`
+- this will take a while (~ 10mins)
 
 4. Create documents from the data set using:
 ```bash
