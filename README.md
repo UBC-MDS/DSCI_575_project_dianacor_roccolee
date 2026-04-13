@@ -62,6 +62,7 @@ conda activate amazon-recommender # or whatever the custom env name might be
 # Via terminal in the root project directory 
 python ./src/direct_datadownload.py 
 ```
+
 ### 4. Convert to Parquet
 Run bellow code to convert from .jsonl / .json.gz to parquet:
 > This step might also take quite long due to the large files conversion and merging the two. Estimated to be ~10-15 minutes.
@@ -72,7 +73,6 @@ python src/convert_parquet.py \
   --meta data/raw/meta_Electronics.jsonl.gz \
   --subset_sample_size 500
 ```
-
 ### 5. Create Search Documents
 This prepares the processed data as document objects used by the retrieval systems.
 
