@@ -31,25 +31,29 @@ def main():
     args = parse_args()
     df = pd.read_parquet(args.input, columns=[args.text_col, args.name_col])
 
-    print(f"Tokenizing {len(df)} documents and building corpus")
+    print(f"[STATUS] Tokenizing {len(df)} documents and building corpus")
     tokenized_corpus = [tokenize(text) for text in df["document"]]
     doc_names = df["product_title"].tolist()
 
-    print("Building BM25 index")
+    print("[STATUS] Building BM25 index")
     bm25 = BM25Okapi(tokenized_corpus)
 
-    print("Saving index")
+
     with open(f"{args.output_dir}bm25_index.pkl", "wb") as f:
         pickle.dump({"bm25": bm25, "doc_names": doc_names}, f)
+    print("[DONE] Saved index as bm25_index.pkl with document (product) names")
 
-    print("Saving corpus")
     with open(f"{args.output_dir}tokenized_corpus.pkl", "wb") as f:
         pickle.dump(tokenized_corpus, f)
+    print("[DONE] Saved corpus as tokenized_corpus.pkl")
 
-    print(f"Everything saved to {args.output_dir}")
+    print(f"[STATUS] BM25 process complete, everything saved to {args.output_dir}.")
 
     if args.query:
+        print("\n")
+        print(f"[EXTRA] Query also received: {args.query}")
         results = bm25_search(args.query, bm25, doc_names, k=args.k)
+        print(f"[RESULTS] Top {args.k} for query below:")
         for r in results:
             print(r["product_title"])
             print(f"Score: {r['distance']:.4f}")

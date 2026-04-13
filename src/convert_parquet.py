@@ -78,6 +78,7 @@ def main():
 
 ################################ 2) merge files on parent_asin key ##########################################
 
+    print(f"[STATUS] Starting merge of both meta and reviews files. This may take a while...")
    # need to convert desired columns to one large string for SQL
     raw_cols = ", ".join(f"raw.{col}" for col in args.review_cols)
     meta_cols = ", ".join(f"meta.{col}" for col in args.meta_cols)
@@ -129,9 +130,9 @@ def main():
     """)
     print(f"[DONE] Exported a subset of the full-sized merged (meta + reviews) file.")
 
-
-
     con.close()
+    print(f"[STATUS] Completed all conversions and merges. Closed DuckDB connection.")
+
 
 if __name__ == "__main__":
     main()

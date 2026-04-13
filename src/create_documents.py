@@ -35,9 +35,11 @@ def main():
     """
 
     con = duckdb.connect()
+    print("[STATUS] Connected to DuckDB to start document creation.")
     con.execute(
         f"COPY ({QUERY}) TO '{output_path.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)",
     )
-
+    print("[STATUS] Documentation creation completed.")
+    print("[NOTE] Currently product documentation is just of the merged subset -  in order to prioritize a working pipeline.")
 if __name__ == "__main__":
     main()
