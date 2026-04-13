@@ -21,7 +21,7 @@ In short: the following columns were dropped in meta `["images", "videos", "subt
 
 Currently there are 2 types of retrieval systems being explored:
 1. BM25 -> Keyword TF-IDF based. Expected to preform the best when there's high exact-word matching between a query and the products.
-2. Semantic -> Embedding-based. Expected to preform the best when there's a more abstract query and the products semantic best match the overall meaning and intent of the user query.
+2. Semantic -> Embedding-based. Expected to preform the best when there's a more natural language or conceptual queries and the products semantic best match the overall meaning and intent of the user query.capturing meaning beyond exact keyword overlap.
 
 Comming soon:
 - Hybrid of BM25 and Semantic
@@ -29,53 +29,78 @@ Comming soon:
 
 ## Recreating Project Workflow
 
-1. Clone the repo into the desired folder using this command in a new terminal window:
+### 1. Clone the Repository
+Clone the repo into the desired folder using this command in a new terminal window:
 ```bash
 git clone git@github.com:UBC-MDS/DSCI_575_project_dianacor_roccolee.git
+cd DSCI_575_project_dianacor_roccolee
 ```
 
-2. Make and activate the enviroment using the command below in the same terminal: 
+### 2. Create and Activate the Environment
+Make and activate the environment using the command below in the same terminal (at the root of the repo): 
 ```bash
-conda env create -f environment.yml 
+conda env create -f environment.yml
+conda activate amazon-recommender # or whatever the custom env name might be
 ```
 
-3. Download the data set by running (assuming you are in the root project directory) 
-```bash 
-python ./src/direct_datadownload.py
-``` 
-or alternatively:
-1. Manually download the data from [here](https://amazon-reviews-2023.github.io/)
-- Download both the reviews and meta of the *Electronics* category
-2. Move zip files to the data/raw directory
-3. Extract (unzip) files in the same directory
-- This will take very long to download. Please be patient, (ETA 45-1hr, + longer from the direct download method b/c of the server bottleneck)
+### 3. Download the Dataset
 
-4. Run bellow code to convert from .jsonl / .json.gz to parquet
+**Option A — Manual download  (recommended):**
+1. Go to the [dataset website](https://amazon-reviews-2023.github.io/).
+2. Locate the *Electronics* category.
+3. Download both the reviews and metadata files via the clickable links.
+4. Move the zip files to `data/raw/`
+5. Extract them in place
+
+**Option B — Automated download**:
+```bash
+# Via terminal in the root project directory 
+python ./src/direct_datadownload.py 
+```
+> Note: Downloads are very large. Expect 45–60+ minutes depending on your connection. The automated method may be even slower due to server-side rate limits.
+
+### 4. Convert to Parquet
+Run bellow code to convert from .jsonl / .json.gz to parquet:
+
 ```bash
 python src/convert_parquet.py \
   --reviews data/raw/Electronics.jsonl.gz \
   --meta data/raw/meta_Electronics.jsonl.gz \
-  --subset_sample_size 500 
+  --subset_sample_size 500
 ```
-- By default, the parquet file output will be saved in `./data/processed`
-- this will take a while (~ 10mins)
 
-4. Create documents from the data set using:
+> This step might also take quite long due to the large files conversion and merging the two. Estimated to be ~10-15 minutes.
+
+### 5. Create Search Documents
+This prepares the processed data as document objects used by the retrieval systems.
+
 ```bash
-python src/create_documents.py
+python ./src/create_documents.py
 ```
 
-5. To use BM25 search, run the `bm25.py` file with the appropriate arguments, or just call it plainly to use default arguments
+### 6. Run Retrievals
+
+This creates and exports the required embeddings and index's for both retrieval methods. Both scripts accept a `--query` argument to test out a custom query for each respective method (ex: `<...>.py --query "sony headphones"`) - but this is a optional feature and not required.
+
 ```bash
-python ./src/bm25.py --query "sony headphones"
+python ./src/bm25.py  # BM25 (keyword-based) search
+python ./src/semantic.py # Semantic search
 ```
 
-6. To use semantic search, run the `semantic.py` fule with the appropriate arguments, or just call it plainly to use default arguments
+## 7. Run Retrieval on Example Queries
+This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these 10 example queries provided 5 were chosen to compare, reflect and review the performance of the methods.  
+
 ```bash
-python ./src/semantic.py --query "sony headphones"
+python src/query_retrieval.py
 ```
 
-7. Alternatively, experiment with the search through a web app by running:
+### Run the Web App (*Still Under Construction)
+
+You can also experiment with query search's through a web app by running:
+(Note: this is still currently under construction: deferred to Milestone 2 - but some functionality available )
+
 ```bash
 shiny run ./app/app.py
 ```
+
+Then open the URL shown in your terminal. Use the different radio buttons to toggle between the different retrieval methods.
