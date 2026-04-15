@@ -13,7 +13,7 @@ sentence-transformers
 altair
 shiny==1.5.1
 shinywidgets>=0.3.0
-langchain-huggingface
+langchain-community
 
 
 # dotenv==0.9.9

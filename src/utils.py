@@ -4,6 +4,12 @@ from pathlib import Path
 import string
 import nltk
 from nltk.corpus import stopwords
+from langchain_core.documents import Document
+import faiss
+from langchain_community.vectorstores import FAISS
+import pandas as pd
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 
 nltk.download("stopwords", quiet=True)
 STOP_WORDS = set(stopwords.words("english"))
@@ -103,3 +109,56 @@ def bm25_search(query, bm25, doc_names, k = 5):
             "distance": scores[i]
         })
     return results
+
+def load_documents(parquet_path: str, 
+                    text_col: str = "document"):
+
+    data = pd.read_parquet(parquet_path)
+
+    documents = []
+    for idx, row in data.iterrows():
+        metacols = [col for col in data.columns if col != text_col]
+        metadata = {col: row[col] for col in metacols}
+        doc = Document(page_content=str(row[text_col]), 
+                       metadata=metadata)
+        documents.append(doc)
+
+    print(f"{len(documents)} documents loaded")
+    return documents
+
+def split_documents(documents: list[Document],
+                    chunk_size: int = 500,
+                    chunk_overlap: int = 100) -> list[Document]:
+    """
+    Split documents using RecursiveCharacterTextSplitter
+    It recursively tries to split at natural boundaries (paragraphs, newlines)
+    rather than cutting arbitrarily.
+
+    chunk_size / chunk_overlap are a tradeoff:
+      Too small → loses context; Too large → retrieval less precise
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+    split_docs = text_splitter.split_documents(documents)
+    print(f"Split into {len(split_docs)} chunks")
+    return split_docs
+
+def build_vectorstore(split_docs: list[Document],
+                      model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> FAISS:
+    """
+    Embed chunks with a sentence-transformer and store in FAISS.
+    Lecture uses the same model: sentence-transformers/all-MiniLM-L6-v2
+
+    After this step:
+      • Each chunk → vector representation
+      • Similar meanings → vectors close in space  (lecture note)
+    """
+    # Lecture code: HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(model_name=model_name)
+
+    # Lecture code: FAISS.from_documents(split_docs, embeddings)
+    vectorstore = FAISS.from_documents(split_docs, embeddings)
+    print("FAISS vector store built — knowledge base is now searchable by meaning")
+    return vectorstore
