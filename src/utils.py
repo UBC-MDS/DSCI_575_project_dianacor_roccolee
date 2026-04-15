@@ -139,11 +139,7 @@ def split_documents(documents,
         chunk_overlap=chunk_overlap,
     )
     split_docs = text_splitter.split_documents(documents)
-<<<<<<< HEAD
-    print(f"Split into {len(split_docs)} chunks")
-=======
     print(f"[DONE] Split into {len(split_docs)} chunks/sub-documents")
->>>>>>> b3eab83 (create print and search function)
     return split_docs
 
 def build_vectorstore(split_docs: list[Document],
@@ -171,8 +167,6 @@ def langc_bm25_retriever(split_docs,
     bm25_retriever.k = k
     return bm25_retriever
 
-<<<<<<< HEAD
-=======
 def langc_bm25_search(query, bm25_retriever, k = 5):
     if hasattr(bm25_retriever, "preprocess_func"):
             query_tokens = bm25_retriever.preprocess_func(query)
@@ -203,4 +197,3 @@ def return_top_results(top_k):
             print("---")
 
     return results
->>>>>>> b3eab83 (create print and search function)
