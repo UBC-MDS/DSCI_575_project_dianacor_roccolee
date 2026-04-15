@@ -1,4 +1,4 @@
-from utils import load_documents, split_documents, langc_bm25_retriever
+from utils import *
 import pickle
 import argparse
 
@@ -42,30 +42,9 @@ def main():
     if args.query:
         print("\n")
         print(f"[EXTRA] Query also received: {args.query}")
-
-        query = args.query
-        if hasattr(bm25_retriever, "preprocess_func"):
-            query_tokens = bm25_retriever.preprocess_func(query)
-        else:
-            query_tokens = query.lower().split() #just as a fall back for tokenizing 
-
-        bm25_scores = bm25_retriever.vectorizer.get_scores(query_tokens)
-        bm25_docs = bm25_retriever.docs
-        ranked = sorted(zip(bm25_docs, bm25_scores), 
-                        key=lambda x: x[1], 
-                        reverse=True)
-
-        top_k = ranked[:k]
-
-        results = []
-
-        for doc, score in top_k:
-            results.append({{
-                "score": score,
-                "text": doc.page_content,
-                "metadata": doc.metadata
-            })
-
+        top_k = langc_bm25_search(args.query, bm25_retriever, k=args.k)
+        print(f"[RESULTS] Top {args.k} for query below:")
+        return_top_results(top_k)
 
 if __name__ == "__main__":
     main()

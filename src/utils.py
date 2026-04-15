@@ -107,13 +107,7 @@ def bm25_search(query, bm25, doc_names, k = 5):
                             reverse=True) # higher score is better
     top_k_indices  = ranked_indices[:k]
 
-    results = []
-    for i in top_k_indices:
-        results.append({
-            "product_title": doc_names[i],
-            "distance": scores[i]
-        })
-    return results
+
 
 
 ############################## Langchain Utils Functions ##############################
@@ -130,7 +124,7 @@ def load_documents(parquet_path = "data/processed/product_documents.parquet",
                        metadata=metadata)
         documents.append(doc)
 
-    print(f"{len(documents)} documents loaded")
+    print(f"[DONE]{len(documents)} documents loaded")
     return documents
 
 def split_documents(documents,
@@ -145,7 +139,11 @@ def split_documents(documents,
         chunk_overlap=chunk_overlap,
     )
     split_docs = text_splitter.split_documents(documents)
+<<<<<<< HEAD
     print(f"Split into {len(split_docs)} chunks")
+=======
+    print(f"[DONE] Split into {len(split_docs)} chunks/sub-documents")
+>>>>>>> b3eab83 (create print and search function)
     return split_docs
 
 def build_vectorstore(split_docs: list[Document],
@@ -173,3 +171,36 @@ def langc_bm25_retriever(split_docs,
     bm25_retriever.k = k
     return bm25_retriever
 
+<<<<<<< HEAD
+=======
+def langc_bm25_search(query, bm25_retriever, k = 5):
+    if hasattr(bm25_retriever, "preprocess_func"):
+            query_tokens = bm25_retriever.preprocess_func(query)
+    else:
+        query_tokens = query.lower().split() #just as a fall back for tokenizing 
+
+    bm25_scores = bm25_retriever.vectorizer.get_scores(query_tokens)
+    bm25_docs = bm25_retriever.docs
+    ranked = sorted(zip(bm25_docs, bm25_scores), 
+                    key=lambda x: x[1], 
+                    reverse=True)
+
+    top_k = ranked[:k]
+    return top_k
+
+def return_top_results(top_k):
+    results = []
+    for doc, score in top_k:
+            results.append({
+        "product_title": doc.metadata.get("product_title"),
+        "parent_asin": doc.metadata.get("parent_asin"),
+        "score": float(score)
+    })
+    for r in results:
+            print(f"Product ID: {r["parent_asin"]}")
+            print(r["product_title"])
+            print(f"Score: {r['score']:.4f}")
+            print("---")
+
+    return results
+>>>>>>> b3eab83 (create print and search function)
