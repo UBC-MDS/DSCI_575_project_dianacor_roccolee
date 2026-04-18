@@ -131,6 +131,17 @@ def bm25_search(docs, bm25, query, k = 5):
 
 ############################## Query using Hybrid RAG search ##############################
 
+def build_prompt(SYSTEM_PROMPT, query, context):
+    return f"""{SYSTEM_PROMPT}
+
+context:
+{context}
+
+question: 
+{query}
+
+Answer based on the Amazon datasets: """
+
 def build_hybrid_retriever():
     embeddings = HuggingFaceEmbeddings(
         model_name= "sentence-transformers/all-MiniLM-L6-v2")
@@ -144,7 +155,9 @@ def build_hybrid_retriever():
     documents = [
         Document(
             page_content=row["document"],
-            metadata={"product_title": row["product_title"], "parent_asin": row["parent_asin"], "average_rating": row["average_rating"]}
+            metadata={"product_title": row["product_title"], 
+                      "parent_asin": row["parent_asin"], 
+                      "average_rating": row["average_rating"]}
         )
         for _, row in docs.iterrows()
     ]
@@ -185,7 +198,6 @@ def run_hybrid_chain(query):
             | llm
             | StrOutputParser()
         )
-    
     
     response = hybrid_rag_chain.invoke(query)
     response_cut = response.split("Assistant:", 1)[-1].strip()

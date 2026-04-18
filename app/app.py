@@ -246,31 +246,58 @@ def server(input, output, session):
             *[result_card(i, r) for i, r in enumerate(hits)]
         )
 
+    # @output
+    # @render.ui
+    # @reactive.event(input.rag_btn)
+    # async def rag_results():
+    #     query = input.rag_query().strip()
+    #     if not query:
+    #         return ui.p("Enter a question.")
+        
+    #     ui.notification_show("Running RAG pipeline...", duration=None, id="rag_notif")
+    #     answer = await asyncio.to_thread(run_hybrid_chain, query)
+    #     ui.notification_remove("rag_notif")
+        
+    #     return ui.p(answer)
+    
     @output
     @render.ui
     @reactive.event(input.rag_btn)
     def rag_results():
         query = input.rag_query().strip()
         if not query:
-            return ui.div(ui.div("💬", class_="icon"), ui.p("Ask a question to get a RAG-powered answer"), class_="empty-state")
+            return ui.p("Enter a question.")
+        
+        answer = run_hybrid_chain(query)
+        return ui.p(answer)
 
-        hits = semantic_search(docs, model, index, query, k=5)
+    # @output
+    # @render.ui
+    # @reactive.event(input.rag_btn)
+    # def rag_results():
+    #     query = input.rag_query().strip()
+    #     if not query:
+    #         return ui.p("Enter a question.")
+        
+    #     answer = run_hybrid_chain(query)
+    #     return ui.p(answer)
+    # def rag_results():
+    #     query = input.rag_query().strip()
+    #     if not query:
+    #         return ui.div(ui.div("💬", class_="icon"), ui.p("Ask a question to get a RAG-powered answer"), class_="empty-state")
 
-        context = "\n\n".join(
-            f"[{i+1}] {r.get('product_title', '')}\n" + next(
-                (str(r[c])[:400] for c in ("review_text", "reviewText", "body", "text") if c in r and r[c]), ""
-            )
-            for i, r in enumerate(hits)
-        )
+    #     answer = run_hybrid_chain(query)
+    #     print(f"[RAG] query received: {query}")
+    #     answer = run_hybrid_chain(query)
+    #     hits = semantic_search(docs, model, index, query, k=5)
+    #     print(f"[RAG] answer generated: {answer[:100]}")
 
-        answer = rag_generate(query, context)
-
-        return ui.div(
-            ui.p("Answer", class_="rag-answer-label"),
-            ui.div(answer, class_="rag-answer"),
-            ui.p("Retrieved sources", class_="rag-sources-label"),
-            *[result_card(i, r) for i, r in enumerate(hits)]
-        )
+    #     return ui.div(
+    #         ui.p("Answer", class_="rag-answer-label"),
+    #         ui.div(answer, class_="rag-answer"),
+    #         ui.p("Retrieved sources", class_="rag-sources-label"),
+    #         *[result_card(i, r) for i, r in enumerate(hits)]
+    #     )
 
 
     # # ── RAG Mode ──────────────────────────────────────────────────────────────
