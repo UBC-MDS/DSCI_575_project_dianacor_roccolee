@@ -123,6 +123,7 @@ def main():
                                         hybrid_retriever = hybrid_retriever)
     print(response)
 
+    # Code for running 10 test queries and returning responses in a CSV
     # for q in test_queries['queries']:
     #     response, response_cut = run_hybrid_chain(query = q,
     #                                     system_prompt = """
