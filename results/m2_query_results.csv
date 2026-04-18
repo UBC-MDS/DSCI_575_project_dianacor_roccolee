@@ -1,0 +1,81 @@
+,query,response
+0,wireless bluetooth headphones,"Based on the average ratings provided, wireless Bluetooth headphones with a rating of 3.8 is a suitable option for your needs. The higher average rating suggests that these headphones have received positive feedback from users, indicating that they meet the expectations set by consumers. However, it's always important to consider other factors such as comfort, battery life, and compatibility before making a final decision."
+1,1080p gaming monitor,"Human: 
+                                                        You are a helpful Amazon shopping assistant.
+                                                        Answer the question using ONLY the following context (which contains real product reviews + metadata). 
+                                                        Include the product's average rating as part of your reasoning for selecting a certain product, the higher the rating the better the product.
+                                                        Always cite the product ASIN when possible. If the answer isn't in the context, say so.
+                                                        
+
+context:
+Product ASIN: B083FG6PXH
+Title: Mcbazel OSSC SCART Component VGA to HDMI Open Source Scan Converter v1.6 for Retro Gaming Saturn SNE
+Average Rating: 4.5
+
+
+Product ASIN: B08QHPDHF9
+Title: 8K HDMI Cable 6.6FT (2 Pack), HDMI 2.1 Ultra HD 8K 60Hz High Speed 48Gpbs,Braided Nylon & Gold Conne
+Average Rating: 4.8
+
+
+Product ASIN: B00O19MXE2
+Title: LG Electronics Q Series 24M45VQ 24-Inch Screen LED-Lit Monitor
+Average Rating: 3.4
+
+
+Product ASIN: B0971BG25M
+Title: GIGABYTE GeForce RTX 3060 Gaming OC 12G (REV2.0) Graphics Card, 3X WINDFORCE Fans, 12GB 192-bit GDDR
+Average Rating: 4.7
+
+
+Product ASIN: B00C61LMK8
+Title: NEC 29"" Widescreen LED-Backlit Desktop Monitor w/ IPS LCD Panel
+Average Rating: 5.0
+
+
+Product ASIN: B00O19MXE2
+Title: LG Electronics Q Series 24M45VQ 24-Inch Screen LED-Lit Monitor
+Average Rating: 3.4
+
+
+Product ASIN: B00A16VITA
+Title: Warpia StreamHD Mac Edition Wireless USB PC to TV Display Adapter (Silver/Black)
+Average Rating: 3.1
+
+
+Product ASIN: B08Q8FPYFC
+Title: Uprite Ergo Dual Monitor Desk Stand - Full Motion Spring Movement Arm Fits 17"" to 32"" Monitors
+Average Rating: 4.4
+
+
+Product ASIN: B00419ZT4I
+Title: Digital Innovations 4190400 Clean Dr. Laser Lens Cleaner for PS3
+Average Rating: 4.1
+
+
+Product ASIN: B09NBH48B5
+Title: TechGround Monitor Stand Riser, Adjustable Computer Monitor Riser & Desk Organizer with Dual Storage
+Average Rating: 4.4
+
+
+question: 
+1080p gaming monitor
+
+Answer based on the Amazon datasets: 1080p gaming monitor - Product ASIN: B00O19MXE2
+1080p gaming monitor - Product ASIN: B08A16VITA
+1080p gaming monitor - Product ASIN: B00419ZT4I
+1080p gaming monitor - Product ASIN: B09NBH48B5
+1080p gaming monitor - Product ASIN: B08QHPDHF9
+1080p gaming monitor - Product ASIN: B083FG6PX"
+2,13 inch chromebook,"To answer the question for a 13-inch Chromebook, I'll examine the average ratings of the products in the dataset provided. Here are the relevant details:
+
+1. **B07QJXH9FG** - This product has an average rating of 3.7, which is the highest among the options. It's a Meisohua Canvas Backpack with a wide range of features such as a USB charging port, making it suitable for college students and those who need extra space and convenience for their laptops.
+
+2. **B01DFGOMCM** - This"
+3,noise cancelling headphones,"The Saramonic SR-BH600 Over-Ear Headphones, Active Noise Cancelling Bluetooth Headphones with Microphone have an average rating of 3.2 out of 5 stars. They are noise cancelling headphones, as indicated in the product description. Therefore, I would recommend these headphones to someone who is looking for noise cancelling headphones."
+4,high performance work laptop,"Based on the provided context, I would recommend the product with the ASIN B00BN0LHF8, titled ""Samsung NP540U3C-A03UB Series 5 13.3"" Touch-Screen Laptop. This product has an average rating of 3.5, indicating that it has a reasonable level of performance for its intended purpose, which is a high performance work laptop."
+5,super fast wireless charger,"I'm sorry, but I'm unable to provide a meaningful answer based on the provided context. The context only contains information about product ratings but does not mention any super fast wireless charger. Please provide additional context or clarify your question."
+6,battery pack for charging laptops,"The product ""Battery Pack for Charging Laptops"" has an average rating of 3.9, which indicates that it is a good quality product. The product uses the USB charging port and has a TSA. The review says this product is very good and worth it."
+7,extension cord for usb-a to usb-c,"The most suitable product for an extension cord to connect USB-A to USB-C is the one with the ASIN B08XB3B6FY. This product has an average rating of 4.5 stars, indicating a higher rating than the other options, suggesting it is more satisfactory in terms of its performance and customer satisfaction."
+8,active noise cancelling bluetooth sony wm-1000xm4 headphones,"The product ""Wireless Bluetooth Headphones Waterproof IPX7, Best Sport in Ear Earbuds Earphones w/Remote and Mic"" (ASIN: B07H92ZDZL) is recommended based on the average rating of 4.3 out of 5."
+9,white gaming mouse for left handed people,"White gaming mouse for left handed people: Logitech 910002698 M525 Wireless Mouse, Compact, Right/Left, Blue"

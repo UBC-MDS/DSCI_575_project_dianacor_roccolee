@@ -33,4 +33,6 @@ else:
     if args.query:
         results = vectorstore.similarity_search(args.query, k=3)
         for r in results:
-            print(r.metadata["product_title"])
+            print(r)
+            # print(r.metadata["product_title"])
+
