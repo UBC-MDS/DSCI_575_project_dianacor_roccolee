@@ -153,8 +153,6 @@ app_ui = ui.page_fluid(
             document.getElementById('tab-' + mode).classList.add('active');
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
             document.getElementById('panel-' + mode).classList.add('visible');
-            // sync hidden input so Shiny knows the active mode
-            Shiny.setInputValue('active_mode', mode, {priority: 'event'});
         }
         document.addEventListener('DOMContentLoaded', function() {
             switchMode('search');
@@ -178,8 +176,6 @@ app_ui = ui.page_fluid(
             class_="mode-tabs"
         ),
 
-        # Hidden input that JS writes to so Shiny can read it
-        ui.tags.input(type="hidden", id="active_mode", value="search"),
 
         # ── PANEL: Search Only ────────────────────────────────────────────────
         ui.div(
@@ -222,42 +218,29 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
 
-    # ── Search Only ───────────────────────────────────────────────────────────
-
     @output
     @render.ui
     @reactive.event(input.search_btn)
     def search_results():
         query = input.search_query().strip()
         if not query:
-            return ui.div(
-                ui.div("🔍", class_="icon"),
-                ui.p("Enter a query and hit Search"),
-                class_="empty-state"
-            )
+            return ui.div(ui.div("🔍", class_="icon"), ui.p("Enter a query and hit Search"), class_="empty-state")
 
         mode = input.search_mode()
-
         if mode == "semantic":
             hits = semantic_search(docs, model, index, query, k=5)
             label = "Semantic"
         else:
-            hits = bm25_search(query, bm25, docs, k = 5)
+            hits = bm25_search(docs, bm25, query, k=5)
             label = "BM25"
 
         if not hits:
-            return ui.div(
-                ui.div("🤷", class_="icon"),
-                ui.p("No results found."),
-                class_="empty-state"
-            )
+            return ui.div(ui.div("🤷", class_="icon"), ui.p("No results found."), class_="empty-state")
 
         return ui.div(
             ui.p(f"Top {len(hits)} results — {label} mode", class_="results-label"),
             *[result_card(i, r) for i, r in enumerate(hits)]
         )
-
-    # ── RAG Mode ──────────────────────────────────────────────────────────────
 
     @output
     @render.ui
@@ -265,42 +248,71 @@ def server(input, output, session):
     def rag_results():
         query = input.rag_query().strip()
         if not query:
-            return ui.div(
-                ui.div("💬", class_="icon"),
-                ui.p("Ask a question to get a RAG-powered answer"),
-                class_="empty-state"
-            )
+            return ui.div(ui.div("💬", class_="icon"), ui.p("Ask a question to get a RAG-powered answer"), class_="empty-state")
 
-        # 1. Retrieve context docs via semantic search
         hits = semantic_search(docs, model, index, query, k=5)
 
-        # 2. Build context string for the LLM
-        context_parts = []
-        for i, r in enumerate(hits):
-            title = r.get("product_title", "Unknown product")
-            review = ""
-            for col in ("review_text", "reviewText", "body", "text"):
-                if col in r and r[col]:
-                    review = str(r[col])[:400]
-                    break
-            context_parts.append(f"[{i+1}] {title}\n{review}")
-        context = "\n\n".join(context_parts)
+        context = "\n\n".join(
+            f"[{i+1}] {r.get('product_title', '')}\n" + next(
+                (str(r[c])[:400] for c in ("review_text", "reviewText", "body", "text") if c in r and r[c]), ""
+            )
+            for i, r in enumerate(hits)
+        )
 
-        # 3. Generate answer — swap in your preferred LLM call here
-        answer = rag_generate(query, context)   # defined in utils.py
+        answer = rag_generate(query, context)
 
-        # 4. Render
         return ui.div(
-            # Answer panel
-            ui.div(
-                ui.p("Answer", class_="rag-answer-label"),
-                ui.div(answer, class_="rag-answer"),
-                class_="rag-answer-wrap"
-            ),
-            # Source cards
+            ui.p("Answer", class_="rag-answer-label"),
+            ui.div(answer, class_="rag-answer"),
             ui.p("Retrieved sources", class_="rag-sources-label"),
             *[result_card(i, r) for i, r in enumerate(hits)]
         )
+
+
+    # # ── RAG Mode ──────────────────────────────────────────────────────────────
+
+    # @output
+    # @render.ui
+    # @reactive.event(input.rag_btn)
+    # def rag_results():
+    #     query = input.rag_query().strip()
+    #     if not query:
+    #         return ui.div(
+    #             ui.div("💬", class_="icon"),
+    #             ui.p("Ask a question to get a RAG-powered answer"),
+    #             class_="empty-state"
+    #         )
+
+    #     # 1. Retrieve context docs via semantic search
+    #     hits = semantic_search(docs, model, index, query, k=5)
+
+    #     # 2. Build context string for the LLM
+    #     context_parts = []
+    #     for i, r in enumerate(hits):
+    #         title = r.get("product_title", "Unknown product")
+    #         review = ""
+    #         for col in ("review_text", "reviewText", "body", "text"):
+    #             if col in r and r[col]:
+    #                 review = str(r[col])[:400]
+    #                 break
+    #         context_parts.append(f"[{i+1}] {title}\n{review}")
+    #     context = "\n\n".join(context_parts)
+
+    #     # 3. Generate answer — swap in your preferred LLM call here
+    #     answer = rag_generate(query, context)   # defined in utils.py
+
+    #     # 4. Render
+    #     return ui.div(
+    #         # Answer panel
+    #         ui.div(
+    #             ui.p("Answer", class_="rag-answer-label"),
+    #             ui.div(answer, class_="rag-answer"),
+    #             class_="rag-answer-wrap"
+    #         ),
+    #         # Source cards
+    #         ui.p("Retrieved sources", class_="rag-sources-label"),
+    #         *[result_card(i, r) for i, r in enumerate(hits)]
+    #     )
 
 
 app = App(app_ui, server)
