@@ -14,12 +14,8 @@ sentence-transformers
 altair
 shiny==1.5.1
 shinywidgets>=0.3.0
-<<<<<<< HEAD
-langchain-community
-=======
 langchain-community 
 langchain-core
->>>>>>> 645bf7c (update env)
 
 
 # dotenv==0.9.9
