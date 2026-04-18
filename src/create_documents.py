@@ -17,17 +17,20 @@ def main():
     # foundation of query supplied by Claude 
     # especially for the .as_posix() syntax for paths to work with duckdb window/copy command 
     # and the MAP_KEYS lines to handle the strange mapping structure of the details column
+
+    
     QUERY = f"""
     SELECT
         parent_asin,
-        LEFT(ANY_VALUE(title), 100) AS product_title, -- only first 100 characters of title(they are quite long)
+        LEFT(ANY_VALUE(title), 100) AS product_title,
+        ANY_VALUE(average_rating) AS average_rating,
         CONCAT_WS(' ',
-            ANY_VALUE(main_category), -- fine b/c identical across all duplicated rows
+            ANY_VALUE(main_category),
             ANY_VALUE(title),
-            ARRAY_TO_STRING(ANY_VALUE(features), ' '), 
-            ARRAY_TO_STRING(ANY_VALUE(description),' '),
-            ARRAY_TO_STRING(MAP_KEYS(ANY_VALUE(details)), ' ') || ' ' || ARRAY_TO_STRING(MAP_VALUES(ANY_VALUE(details)), ' '), -- flattening the details which is a MAP(VARCHAR, JSON) into a single string of keys and values
-            STRING_AGG(title_1, ' ')
+            ARRAY_TO_STRING(ANY_VALUE(features), ' '),
+            ARRAY_TO_STRING(ANY_VALUE(description), ' '),
+            ARRAY_TO_STRING(MAP_KEYS(ANY_VALUE(details)), ' ') || ' ' || ARRAY_TO_STRING(MAP_VALUES(ANY_VALUE(details)), ' '),
+            ANY_VALUE(combined_reviews)
         ) AS document
     FROM read_parquet('{input_path.as_posix()}')
     WHERE parent_asin IS NOT NULL

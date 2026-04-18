@@ -3,3 +3,4 @@ title
 features
 description
 details
+average_rating

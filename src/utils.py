@@ -106,6 +106,7 @@ def bm25_search(query, bm25, doc_names, k = 5):
                             key= lambda i: scores[i], 
                             reverse=True) # higher score is better
     top_k_indices  = ranked_indices[:k]
+    return [{"product_title": doc_names[i], "distance": scores[i]} for i in top_k_indices]
 
 
 

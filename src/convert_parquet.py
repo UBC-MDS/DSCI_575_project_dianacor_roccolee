@@ -67,32 +67,61 @@ def main():
     print(f"[DONE] Meta data exported as full-sized parquet file.")
 
     # Reviews
+    # con.execute(f"""
+    #     COPY (SELECT * FROM read_json_auto('{args.reviews}',
+    #                         ignore_errors=true
+    #                         -- sample_size=-1 "forces to scan whole file before inferring types — slow but more accurate"
+    #                         ))
+    #     TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    # """)
+    # print(f"[DONE] Reviews data exported as full-sized parquet file.")
+
+    # Reviews
     con.execute(f"""
-        COPY (SELECT * FROM read_json_auto('{args.reviews}',
-                            ignore_errors=true
-                            -- sample_size=-1 "forces to scan whole file before inferring types — slow but more accurate"
-                            ))
-        TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
-    """)
-    print(f"[DONE] Reviews data exported as full-sized parquet file.")
+    COPY (
+        WITH ranked_reviews AS (
+            SELECT
+                parent_asin,
+                title,
+                helpful_vote,
+                ROW_NUMBER() OVER (
+                    PARTITION BY parent_asin
+                    ORDER BY helpful_vote DESC
+                ) AS rn
+            FROM read_json_auto(
+                '{args.reviews}',
+                ignore_errors=true
+                -- sample_size=-1  "forces to scan whole file before inferring types — slow but more accurate"
+            )
+        )
+        SELECT
+            parent_asin,
+            STRING_AGG(title, ' | ' ORDER BY helpful_vote DESC) AS combined_reviews
+        FROM ranked_reviews
+        WHERE rn <= 10
+        GROUP BY parent_asin
+    )
+    TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
+""")
+    print(f"[DONE] Reviews data exported — 1 row per product, top 10 reviews merged.")
 
 ################################ 2) merge files on parent_asin key ##########################################
 
     print(f"[STATUS] Starting merge of both meta and reviews files. This may take a while...")
-   # need to convert desired columns to one large string for SQL
-    raw_cols = ", ".join(f"raw.{col}" for col in args.review_cols)
+    # need to convert desired columns to one large string for SQL
     meta_cols = ", ".join(f"meta.{col}" for col in args.meta_cols)
+    # reviews parquet only contains parent_asin + combined_reviews after aggregation & can then ignore args.review_cols (just use all cols)
 
     # left join from meta so every product row is preserved (even with no reviews)
     con.execute(f"""
         COPY (
-            SELECT meta.parent_asin, {meta_cols}, {raw_cols}
+            SELECT meta.parent_asin, {meta_cols}, raw.combined_reviews
             FROM read_parquet('{meta_raw}') as meta
             LEFT JOIN read_parquet('{reviews_raw}') as raw USING (parent_asin)
         )
         TO '{merged_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    
+
     print(f"[DONE] Merged both meta and reviews and exported.")
 
 ########################################## 3) create merged subset ##########################################
