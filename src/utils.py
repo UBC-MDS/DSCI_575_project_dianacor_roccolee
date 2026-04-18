@@ -1,3 +1,4 @@
+import faiss
 import requests
 from tqdm import tqdm
 from pathlib import Path
@@ -5,7 +6,6 @@ import string
 import nltk
 from nltk.corpus import stopwords
 from langchain_core.documents import Document
-import faiss
 from langchain_community.vectorstores import FAISS
 import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
