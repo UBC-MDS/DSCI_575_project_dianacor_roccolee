@@ -105,6 +105,25 @@ This runs examples queries that are available in `results/queries.csv` (this can
 python src/query_retrieval.py
 ```
 
+
+
+## 8. Run RAG pipelines on Example Queries
+Step 1:
+```bash
+#run lang-chain specific retrievers first: 
+python src/langc_bm25.py
+python src/langc_semantic.py
+```
+
+Step 2:
+```bash
+#For specific-semantic RAG, run:
+# python src/rag_pipeline.py
+
+#For specific-hybrid RAG /running RAG on the same 10 Example Queries
+python src/hybrid.py
+```
+
 ### Run the Web App
 
 You can also experiment with query search's through a web app by running:

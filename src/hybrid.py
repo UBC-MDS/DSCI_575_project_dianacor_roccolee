@@ -113,7 +113,8 @@ def main():
     test_queries = pd.read_csv("results/queries.csv")
     results = []
 
-    response, response_cut = run_hybrid_chain(query = "1080p gaming monitor",
+    for q in test_queries['queries']:
+        response, response_cut = run_hybrid_chain(query = q,
                                         system_prompt = """
                                                         You are a helpful Amazon shopping assistant.
                                                         Answer the question using ONLY the following context (which contains real product reviews + metadata). 
@@ -121,25 +122,14 @@ def main():
                                                         Always cite the product ASIN when possible. If the answer isn't in the context, say so.
                                                         """,
                                         hybrid_retriever = hybrid_retriever)
-    print(response)
-
-    # for q in test_queries['queries']:
-    #     response, response_cut = run_hybrid_chain(query = q,
-    #                                     system_prompt = """
-    #                                                     You are a helpful Amazon shopping assistant.
-    #                                                     Answer the question using ONLY the following context (which contains real product reviews + metadata). 
-    #                                                     Include the product's average rating as part of your reasoning for selecting a certain product, the higher the rating the better the product.
-    #                                                     Always cite the product ASIN when possible. If the answer isn't in the context, say so.
-    #                                                     """,
-    #                                     hybrid_retriever = hybrid_retriever)
-    #     results.append({
-    #         'query': q,
-    #         'response': response_cut
-    #     })
-    # results_df = pd.DataFrame(results)
-    # results_df.to_csv("results/m2_query_results.csv")
-    # print(results_df)
-    # return results_df
+        results.append({
+            'query': q,
+            'response': response_cut
+        })
+    results_df = pd.DataFrame(results)
+    results_df.to_csv("results/m2_query_results.csv")
+    print(results_df)
+    return results_df
 
 if __name__ == "__main__":
     main()

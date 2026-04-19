@@ -11,6 +11,17 @@ from langchain_core.output_parsers import StrOutputParser
 from transformers import pipeline
 from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+import argparse
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--query', 
+                    default="what is a good gaming mouse to buy if I am left handed?",
+                    type=str, 
+                    help='Search query')
+args = parser.parse_args()
+
 
 def build_prompt(SYSTEM_PROMPT, query, context):
     return f"""{SYSTEM_PROMPT}
@@ -59,7 +70,7 @@ def run_chain(query = "what is a good gaming mouse to buy if I am left handed?",
     generator = pipeline(
                     "text-generation",
                     model="Qwen/Qwen2.5-1.5B",
-                    max_new_tokens=128,
+                    max_new_tokens=256,
                     do_sample=True,
                 )
     llm = HuggingFacePipeline(pipeline=generator)
@@ -83,7 +94,7 @@ def run_chain(query = "what is a good gaming mouse to buy if I am left handed?",
     print(response_cut)
 
 
-run_chain(query = "what is a good gaming mouse to buy if I am left handed?",
+run_chain(query = args.query,
             system_prompt = """
                             You are a helpful Amazon shopping assistant.
                             Answer the question using ONLY the following context (which contains real product reviews + metadata).
