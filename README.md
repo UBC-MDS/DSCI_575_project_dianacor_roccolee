@@ -20,12 +20,21 @@ In short: the following columns were dropped in meta `["images", "videos", "subt
 ## Current Types of Retrieval Systems:
 
 Currently there are 2 types of retrieval systems being explored:
+
 1. BM25 -> Keyword TF-IDF based. Expected to preform the best when there's high exact-word matching between a query and the products.
+
 2. Semantic -> Embedding-based. Expected to preform the best when there's a more natural language or conceptual queries and the products semantic best match the overall meaning and intent of the user query.capturing meaning beyond exact keyword overlap.
 
-Comming soon:
-- Hybrid of BM25 and Semantic
-- RAG
+3. RAG (Retrieval-Augmented Generation) → Combines the retrieval step with a generative language model (llm response). The retrieved documents are passed as context to the model, which then give a more natural language response that's grounded in context of the product data. Two RAG workflows are available planned:
+
+    - Semantic RAG: uses the semantic (embedding-based) retriever to fetch relevant documents, then passes them to the generative model.
+    - Hybrid RAG: uses a hybrid of BM25 and semantic retrieval before passing results to the generative model, aiming to combine the strengths of both approaches.
+
+A diagram of the workflow can be seen below:
+![](RAG_workflow.png)
+
+### Model Choice for RAG:
+For the RAG workflow, we use Qwen/Qwen2.5-0.5B as our generative model. This was chosen to try balance performance with our local compute constraints — the larger 1.5B variant of the same family was ruled out due to response times being too slow within the Shiny app. As a decoder-only model, it is well suited for the text generation step in a RAG pipeline. Alternative decoder-only models that could be use include `microsoft/phi-2`, `microsoft/phi-3-mini-4k-instruct`, and `google/gemma-2-2b-it, but they are subject to local computing power.
 
 ## Recreating Project Workflow
 
@@ -96,7 +105,7 @@ This runs examples queries that are available in `results/queries.csv` (this can
 python src/query_retrieval.py
 ```
 
-### Run the Web App (*Still Under Construction)
+### Run the Web App
 
 You can also experiment with query search's through a web app by running:
 (Note: this is still currently under construction: deferred to Milestone 2 - but some functionality available )
