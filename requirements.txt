@@ -17,3 +17,4 @@ shiny
 shinywidgets
 langchain-community 
 langchain-core
+langchain_huggingface

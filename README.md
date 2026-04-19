@@ -23,10 +23,6 @@ Currently there are 2 types of retrieval systems being explored:
 1. BM25 -> Keyword TF-IDF based. Expected to preform the best when there's high exact-word matching between a query and the products.
 2. Semantic -> Embedding-based. Expected to preform the best when there's a more natural language or conceptual queries and the products semantic best match the overall meaning and intent of the user query.capturing meaning beyond exact keyword overlap.
 
-Comming soon:
-- Hybrid of BM25 and Semantic
-- RAG
-
 ## Recreating Project Workflow
 
 > NOTE: If files in `data/processed` are removed -> Steps 1-4 must be done first before running the milestone1_exploration (requires parquet format).
@@ -96,13 +92,25 @@ This runs examples queries that are available in `results/queries.csv` (this can
 python src/query_retrieval.py
 ```
 
-### Run the Web App (*Still Under Construction)
+## 8. Run Semanic Search with Retriever Augmented Generator (RAG) Pipeline
+The following code runs a RAG pipeline (located in `src/rag_pipeline.py`) that uses Semantic search as a retriever to gather documents relevant to the user's query. The relevant documents and a base system prompt are passed to a Large Language Model (LLM), from which a response is generated and returned. You may edit the `query` argument in the run_chain function to pass your own query to the LLM. 
+
+```bash
+python src/rag_pipeline.py
+```
+
+## 9. Run Hybrid Retriever with RAG Pipeline
+If the performance of a Semantic serarch retriever is not enough to answer your query, you can try passing the same query into a RAG pipeline that uses a weighted sum to combine the results of a Semantic and BM25 retriever. Again, you may input your query into the `query` parameter in the run_hybrid_chain function located in `hybrid.py`.  
+
+```bash
+python src/hybrid.py
+```
+
+### Run the Web App
 
 You can also experiment with query search's through a web app by running:
-(Note: this is still currently under construction: deferred to Milestone 2 - but some functionality available )
 
 ```bash
 shiny run ./app/app.py
 ```
-
-Then open the URL shown in your terminal. Use the different radio buttons to toggle between the different retrieval methods.
+Then open the URL shown in your terminal. If you want to experiment with a retriever-only search, stay in the "Search Only" tab and use the dropdown to select which retriever you would like to use for your query. If you would prefer to experiment with the Hybrid RAG pipeline, switch to the "RAG Mode" tab, enter your query and press the "Ask" button. **Note that this step may take a while**
