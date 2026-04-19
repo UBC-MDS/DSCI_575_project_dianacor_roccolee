@@ -98,14 +98,12 @@ python ./src/bm25.py  # BM25 (keyword-based) search
 python ./src/semantic.py # Semantic search
 ```
 
-## 7. Run Retrieval on Example Queries
+## 7. Run Basic Retrievals on Example Queries
 This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these 10 example queries provided 5 were chosen to compare, reflect and review the performance of the methods.  
 
 ```bash
 python src/query_retrieval.py
 ```
-
-
 
 ## 8. Run RAG pipelines on Example Queries
 Step 1:
@@ -127,10 +125,8 @@ python src/hybrid.py
 ### Run the Web App
 
 You can also experiment with query search's through a web app by running:
-(Note: this is still currently under construction: deferred to Milestone 2 - but some functionality available )
 
 ```bash
 shiny run ./app/app.py
 ```
-
-Then open the URL shown in your terminal. Use the different radio buttons to toggle between the different retrieval methods.
+Then open the URL shown in your terminal. If you want to experiment with a retriever-only search, stay in the "Search Only" tab and use the dropdown to select which retriever you would like to use for your query. If you would prefer to experiment with the Hybrid RAG pipeline, switch to the "RAG Mode" tab, enter your query and press the "Ask" button. **Note that this step may take a while**
