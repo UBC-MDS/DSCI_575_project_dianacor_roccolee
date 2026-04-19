@@ -1,4 +1,7 @@
 import faiss
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import pandas as pd
@@ -74,15 +77,19 @@ def run_hybrid_chain(query = "1080p gaming monitor",
                             Answer the question using ONLY the following context (which contains real product reviews + metadata).
                             Always cite the product ASIN when possible. If the answer isn't in the context, say so.
                             """,
-            hybrid_retriever = build_hybrid_retriever()):
+            hybrid_retriever = None,
+            model = "Qwen/Qwen2.5-1.5B"):
+
+    if hybrid_retriever == None:
+        hybrid_retriever = build_hybrid_retriever()
 
     docs = hybrid_retriever.invoke(query)
     context = build_context(docs)
 
     generator = pipeline(
                     "text-generation",
-                    model="Qwen/Qwen2.5-1.5B",
-                    max_new_tokens=128,
+                    model=model,
+                    max_new_tokens=256,
                     do_sample=True,
                 )
     llm = HuggingFacePipeline(pipeline=generator)
@@ -110,25 +117,28 @@ def main():
 
     hybrid_retriever = build_hybrid_retriever()
 
-    test_queries = pd.read_csv("results/queries.csv")
+    test_queries = pd.read_csv("results/single_query.csv")
     results = []
+    # models = ["Qwen/Qwen2.5-0.5B", "microsoft/Phi-3-mini-4k-instruct"]
+    models = ["microsoft/Phi-3-mini-4k-instruct"]
 
-    for q in test_queries['queries']:
-        response, response_cut = run_hybrid_chain(query = q,
-                                        system_prompt = """
-                                                        You are a helpful Amazon shopping assistant.
-                                                        Answer the question using ONLY the following context (which contains real product reviews + metadata). 
-                                                        Include the product's average rating as part of your reasoning for selecting a certain product, the higher the rating the better the product.
-                                                        Always cite the product ASIN when possible. If the answer isn't in the context, say so.
-                                                        """,
-                                        hybrid_retriever = hybrid_retriever)
-        results.append({
-            'query': q,
-            'response': response_cut
-        })
+    for model in models:
+        for q in test_queries['queries']:
+            response, response_cut = run_hybrid_chain(query = q,
+                                            system_prompt = """
+                                                            You are a helpful Amazon shopping assistant.
+                                                            Answer the question using ONLY the following context (which contains real product reviews + metadata). 
+                                                            Include the product's average rating as part of your reasoning for selecting a certain product, the higher the rating the better the product.
+                                                            Always cite the product ASIN when possible. If the answer isn't in the context, say so.
+                                                            """,
+                                            hybrid_retriever = hybrid_retriever,
+                                            model = model)
+            results.append({
+                'query': q,
+                model + '\'s response': response
+            })
     results_df = pd.DataFrame(results)
-    results_df.to_csv("results/m2_query_results.csv")
-    print(results_df)
+    results_df.to_csv("results/final_query_results.csv")
     return results_df
 
 if __name__ == "__main__":
