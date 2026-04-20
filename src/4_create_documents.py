@@ -2,23 +2,27 @@ import argparse
 from pathlib import Path
 import duckdb
 
-def main():
+def parse_args():
+    '''To accept arguments directly via bash/terminal commands'''
     p = argparse.ArgumentParser()
     p.add_argument("--input",   
                    default="data/processed/merged_subset.parquet")
-    p.add_argument("--output", 
+    p.add_argument("--out-dir", 
                    default="data/processed/product_documents.parquet")
-    args = p.parse_args()
+    return p.parse_args()
+
+def main():
+    '''Main function to preprocess and combine relevant columns 
+    from the merged Parquet file into a single "product document" for each product.'''
+    args = parse_args()
 
     input_path = Path(args.input)
-    output_path = Path(args.output)
+    output_path = Path(args.out_dir)
 
-    # currently just concats title, main_category, and features (after expanding the array)
     # foundation of query supplied by Claude 
+    # concats title, main_category, and features (after expanding the array)
     # especially for the .as_posix() syntax for paths to work with duckdb window/copy command 
-    # and the MAP_KEYS lines to handle the strange mapping structure of the details column
-
-    
+    # and the MAP_KEYS lines to handle the strange mapping structure of the details column 
     QUERY = f"""
     SELECT
         parent_asin,
@@ -43,6 +47,7 @@ def main():
         f"COPY ({QUERY}) TO '{output_path.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)",
     )
     print("[STATUS] Documentation creation completed.")
-    print("[NOTE] Currently product documentation is just of the merged subset -  in order to prioritize a working pipeline.")
+    print("[NOTE] Currently product documentation is just of the merged subset \n       in order to prioritize a working pipeline.")
+
 if __name__ == "__main__":
     main()
