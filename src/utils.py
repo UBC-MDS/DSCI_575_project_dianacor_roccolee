@@ -145,18 +145,18 @@ def split_documents(documents,
     print(f"[DONE] Split into {len(split_docs)} chunks/sub-documents")
     return split_docs
 
-def build_vectorstore(split_docs: list[Document],
-                      model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> FAISS:
-    """
-    Embed chunks with a sentence-transformer and store in FAISS
-    """
-    # Lecture code: HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    embeddings = HuggingFaceEmbeddings(model_name=model_name)
+# def build_vectorstore(split_docs: list[Document],
+#                       model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> FAISS:
+#     """
+#     Embed chunks with a sentence-transformer and store in FAISS
+#     """
+#     # Lecture code: HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+#     embeddings = HuggingFaceEmbeddings(model_name=model_name)
 
-    # Lecture code: FAISS.from_documents(split_docs, embeddings)
-    vectorstore = FAISS.from_documents(split_docs, embeddings)
-    print("FAISS vector store built — knowledge base is now searchable by meaning")
-    return vectorstore
+#     # Lecture code: FAISS.from_documents(split_docs, embeddings)
+#     vectorstore = FAISS.from_documents(split_docs, embeddings)
+#     print("FAISS vector store built — knowledge base is now searchable by meaning")
+#     return vectorstore
 
 
 def build_bm25_retriever(split_docs, 
