@@ -24,9 +24,12 @@ def parse_args():
     p.add_argument("--merged",
                    default="data/processed/merged.parquet",
                    help="Path to merged.parquet")
-    p.add_argument("--out-dir",
+    p.add_argument("--raw-out-dir",
+                   default="data/raw",
+                   help="Output directory for subset of the raw Parquet files")
+    p.add_argument("--merged-out-dir",
                    default="data/processed",
-                   help="Output directory for subset Parquet files")
+                   help="Output directory for subset of the merged Parquet file")
     p.add_argument("--sample-size", type=int,
                    default=10000,
                    help="Row limit for subsets")
@@ -38,12 +41,14 @@ def main():
     and/or want to iterate through the rest of the workflow. '''
 
     args = parse_args()
-    out = Path(args.out_dir)
-    out.mkdir(parents=True, exist_ok=True)
+    raw_out = Path(args.raw_out_dir)
+    merge_out = Path(args.merged_out_dir)
+    raw_out.mkdir(parents=True, exist_ok=True)
+    merge_out.mkdir(parents=True, exist_ok=True)
 
-    meta_subset    = str(out / "meta_raw_subset.parquet")
-    reviews_subset = str(out / "k_reviews_raw_subset.parquet")
-    merged_subset  = str(out / "merged_subset.parquet")
+    meta_subset    = str(raw_out / "meta_raw_subset.parquet")
+    reviews_subset = str(raw_out / "k_reviews_raw_subset.parquet")
+    merged_subset  = str(merge_out / "merged_subset.parquet")
 
     con = duckdb.connect()
     print("[STATUS] Connected to DuckDB. Exporting subsets...")
