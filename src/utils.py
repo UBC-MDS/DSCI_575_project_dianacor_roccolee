@@ -71,6 +71,7 @@ def download_request(specific_url, output, filename):
     print(f"Saved: {filename} in {output}")
 
 ############################## Query using semantic search ##############################
+
 def semantic_search(docs, model, index, query, k=5):
     query_embedding = model.encode([query]).astype('float32')
     distances, indices = index.search(query_embedding, k)
@@ -86,32 +87,33 @@ def semantic_search(docs, model, index, query, k=5):
 
 ############################## Query using BM25 search ##############################
 
-def tokenize(document) -> list[str]:
-    """
-    Custom tokenized function for BM25.
-    Does whitespace split, makes lowercase, remove punctuation and stopwords.
-    """
+# def tokenize(document) -> list[str]:
+#     """
+#     Custom tokenized function for BM25.
+#     Does whitespace split, makes lowercase, remove punctuation and stopwords.
+#     """
 
-    document = document.lower()
-    document = document.translate(str.maketrans("", "", string.punctuation)) # removes punctuation 
-    tokens = document.split()
-    tokens = [t for t in tokens if t not in STOP_WORDS]
-    return tokens
+#     document = document.lower()
+#     document = document.translate(str.maketrans("", "", string.punctuation)) # removes punctuation 
+#     tokens = document.split()
+#     tokens = [t for t in tokens if t not in STOP_WORDS]
+#     return tokens
 
 
-def bm25_search(query, bm25, doc_names, k = 5):
-    tokens = tokenize(query)
-    scores = bm25.get_scores(tokens)
-    ranked_indices = sorted(range(len(scores)), 
-                            key= lambda i: scores[i], 
-                            reverse=True) # higher score is better
-    top_k_indices  = ranked_indices[:k]
-    return [{"product_title": doc_names[i], "distance": scores[i]} for i in top_k_indices]
+# def bm25_search(query, bm25, doc_names, k = 5):
+#     tokens = tokenize(query)
+#     scores = bm25.get_scores(tokens)
+#     ranked_indices = sorted(range(len(scores)), 
+#                             key= lambda i: scores[i], 
+#                             reverse=True) # higher score is better
+#     top_k_indices  = ranked_indices[:k]
+#     return [{"product_title": doc_names[i], "distance": scores[i]} for i in top_k_indices]
 
 
 
 
 ############################## Langchain Utils Functions ##############################
+
 def load_documents(parquet_path = "data/processed/product_documents.parquet", 
                     text_col= "document"):
 
@@ -125,7 +127,7 @@ def load_documents(parquet_path = "data/processed/product_documents.parquet",
                        metadata=metadata)
         documents.append(doc)
 
-    print(f"[DONE]{len(documents)} documents loaded")
+    print(f"[DONE] {len(documents)} documents loaded")
     return documents
 
 def split_documents(documents,
@@ -146,12 +148,7 @@ def split_documents(documents,
 def build_vectorstore(split_docs: list[Document],
                       model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> FAISS:
     """
-    Embed chunks with a sentence-transformer and store in FAISS.
-    Lecture uses the same model: sentence-transformers/all-MiniLM-L6-v2
-
-    After this step:
-      • Each chunk → vector representation
-      • Similar meanings → vectors close in space  (lecture note)
+    Embed chunks with a sentence-transformer and store in FAISS
     """
     # Lecture code: HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     embeddings = HuggingFaceEmbeddings(model_name=model_name)
@@ -162,41 +159,45 @@ def build_vectorstore(split_docs: list[Document],
     return vectorstore
 
 
-def langc_bm25_retriever(split_docs, 
+def build_bm25_retriever(split_docs, 
                          k: int = 5):
     bm25_retriever = BM25Retriever.from_documents(split_docs)
     bm25_retriever.k = k
     return bm25_retriever
 
-def langc_bm25_search(query, bm25_retriever, k = 5):
+def bm25_search(query, bm25_retriever, k = 5):
+    #tokenize the query
     if hasattr(bm25_retriever, "preprocess_func"):
             query_tokens = bm25_retriever.preprocess_func(query)
     else:
         query_tokens = query.lower().split() #just as a fall back for tokenizing 
 
+    
     bm25_scores = bm25_retriever.vectorizer.get_scores(query_tokens)
     bm25_docs = bm25_retriever.docs
+
     ranked = sorted(zip(bm25_docs, bm25_scores), 
                     key=lambda x: x[1], 
                     reverse=True)
 
-    top_k = ranked[:k]
-    return top_k
+    top_k_docs = ranked[:k]
+    return top_k_docs
 
-def return_top_results(top_k):
+def print_top_results(top_k_docs):
     results = []
-    for doc, score in top_k:
+    for doc, score in top_k_docs:
             results.append({
-        "product_title": doc.metadata.get("product_title"),
         "parent_asin": doc.metadata.get("parent_asin"),
+        "product_title": doc.metadata.get("product_title"),
+        "average_rating": doc.metadata.get("average_rating"),
         "score": float(score)
     })
     for r in results:
             print(f"Product ID: {r['parent_asin']}")
-            print(r["product_title"])
+            print(f"Product Title: {r['product_title']}")
+            print(f"Rating: {r['average_rating']}")
             print(f"Score: {r['score']:.4f}")
             print("---")
-
     return results
 
 ############################## RAG pipeline Functions ##############################
