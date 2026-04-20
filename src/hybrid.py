@@ -80,8 +80,6 @@ def run_hybrid_chain(query = "1080p gaming monitor",
             hybrid_retriever = None,
             model = "Qwen/Qwen2.5-1.5B"):
 
-    if hybrid_retriever == None:
-        hybrid_retriever = build_hybrid_retriever()
 
     docs = hybrid_retriever.invoke(query)
     context = build_context(docs)
@@ -89,13 +87,16 @@ def run_hybrid_chain(query = "1080p gaming monitor",
     generator = pipeline(
                     "text-generation",
                     model=model,
-                    max_new_tokens=256,
+                    max_new_tokens=128,
                     do_sample=True,
                 )
     llm = HuggingFacePipeline(pipeline=generator)
     text_prompt = build_prompt(system_prompt, query, context)
     full_prompt = ChatPromptTemplate.from_template(text_prompt)
 
+    if hybrid_retriever == None:
+        hybrid_retriever = build_hybrid_retriever()
+        
     hybrid_rag_chain = (
             {
                 "context": hybrid_retriever |  RunnableLambda(build_context),
@@ -108,7 +109,10 @@ def run_hybrid_chain(query = "1080p gaming monitor",
     
     
     response = hybrid_rag_chain.invoke(query)
-    response_cut = response.split("Assistant:", 1)[-1].strip()
+    if model == "Qwen/Qwen2.5-1.5B":
+        response_cut = response.split("Assistant:", 1)[-1].strip()
+    else:
+        response_cut = response.split("Solution 1: ", 1)[-1].strip()
 
     return (response, response_cut)
 
@@ -117,7 +121,7 @@ def main():
 
     hybrid_retriever = build_hybrid_retriever()
 
-    test_queries = pd.read_csv("results/single_query.csv")
+    test_queries = pd.read_csv("results/queries.csv")
     results = []
     # models = ["Qwen/Qwen2.5-0.5B", "microsoft/Phi-3-mini-4k-instruct"]
     models = ["microsoft/Phi-3-mini-4k-instruct"]
@@ -135,10 +139,10 @@ def main():
                                             model = model)
             results.append({
                 'query': q,
-                model + '\'s response': response
+                model + '\'s response': response_cut
             })
     results_df = pd.DataFrame(results)
-    results_df.to_csv("results/final_query_results.csv")
+    results_df.to_csv("results/final_query_results_v2.csv")
     return results_df
 
 if __name__ == "__main__":
