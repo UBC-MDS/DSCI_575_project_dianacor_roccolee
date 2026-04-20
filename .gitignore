@@ -4,6 +4,7 @@ data/raw/*
 
 # Ignore everything in raw/ (except .gitkeep, and the sample subsets)
 data/processed/*
+!data/processed/langchain_semantic_index
 !data/processed/.gitkeep
 !data/processed/*_subset.parquet
 !data/processed/product_documents.parquet
