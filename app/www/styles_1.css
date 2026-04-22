@@ -1,0 +1,82 @@
+:root {
+    --bg: #0e0f13;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --accent: #e8ff47;
+    --accent2: #47c8ff;
+    --text: #f0f0f0;
+    --muted: #6b7080;
+    --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+.app-wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+.app-header { margin-bottom: 32px; }
+.app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.4rem; letter-spacing: -1px; line-height: 1; }
+.app-title span { color: var(--accent); }
+.app-sub { color: var(--muted); font-size: 0.82rem; margin-top: 8px; }
+
+/* Shiny nav tabs */
+.nav-tabs { border-bottom: 1.5px solid var(--border); margin-bottom: 28px; }
+.nav-tabs .nav-link {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+    color: var(--muted); background: none; border: none;
+    padding: 10px 24px; border-radius: 0; transition: color 0.18s;
+}
+.nav-tabs .nav-link:hover { color: var(--text); }
+.nav-tabs .nav-link.active {
+    color: var(--accent) !important; background: none !important;
+    border-bottom: 2.5px solid var(--accent) !important;
+}
+.tab-content { padding-top: 8px; }
+
+/* Search bar */
+.search-wrap { display: flex; gap: 10px; margin-bottom: 36px; margin-top: 20px; }
+.search-wrap input[type=text] {
+    flex: 1; background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 0.95rem; padding: 14px 18px; outline: none; transition: border-color 0.18s;
+}
+.search-wrap input[type=text]:focus { border-color: var(--accent); }
+.search-wrap input[type=text]::placeholder { color: var(--muted); }
+.search-btn {
+    background: var(--accent); border: none; border-radius: var(--radius);
+    color: #0e0f13; font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.9rem; padding: 14px 28px; cursor: pointer; transition: opacity 0.18s;
+}
+.search-btn:hover { opacity: 0.85; }
+
+/* Mode select */
+.selectize-input {
+    background: var(--surface) !important; border: 1.5px solid var(--border) !important;
+    color: var(--text) !important; font-family: 'DM Mono', monospace !important;
+    border-radius: var(--radius) !important; margin-bottom: 20px;
+}
+.selectize-dropdown {
+    background: var(--surface) !important; border: 1.5px solid var(--border) !important;
+    color: var(--text) !important;
+}
+.selectize-dropdown .option:hover { background: var(--surface2) !important; }
+
+/* Result cards */
+.results-label { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.result-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 14px; transition: border-color 0.18s; }
+.result-card:hover { border-color: var(--accent); }
+.card-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.rank-badge { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.78rem; color: var(--accent); }
+.rating-badge { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.78rem; color: var(--accent2); margin-left: auto; }
+.product-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--text); line-height: 1.35; }
+
+/* RAG answer */
+.rag-answer-label { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
+.rag-answer {
+    background: var(--surface2); border: 1.5px solid var(--accent2);
+    border-radius: var(--radius); padding: 22px 24px;
+    font-size: 0.92rem; line-height: 1.7; color: var(--text);
+}
+
+/* Empty states */
+.empty-state { text-align: center; padding: 60px 0; color: var(--muted); font-size: 0.85rem; }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }

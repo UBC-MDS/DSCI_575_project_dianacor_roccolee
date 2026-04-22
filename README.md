@@ -126,6 +126,7 @@ python src/9_hybrid.py
 You can also experiment with query search's through a web app by running:
 
 ```bash
+cp src/utils.py app/utils.py
 shiny run ./app/app.py
 ```
 
