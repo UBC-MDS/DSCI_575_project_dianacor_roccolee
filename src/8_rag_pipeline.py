@@ -18,7 +18,7 @@ from dotenv import load_dotenv, find_dotenv
 
 def parse_args():
     '''To accept arguments directly via bash/terminal commands'''
-    parser = argparse.ArgumentParser(description="Hybrid BM25 + Semantic RAG pipeline for Amazon product search.")
+    parser = argparse.ArgumentParser()
     parser.add_argument("--faiss-folder",
                         type=str,
                         default="data/retrievers/semantic_index",
