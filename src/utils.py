@@ -335,17 +335,24 @@ def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt,
     
     test_queries = pd.read_csv(test_queries_path)
     results = []
-    models = {model_1: ChatGroq(model=model_1),
-            model_2: ChatGroq(model=model_2)}
+    models = {"model_1": ChatGroq(model=model_1),
+            "model_2": ChatGroq(model=model_2)}
 
-    for model, llm in models.items():
-        for q in test_queries["queries"]:
-            response = run_chain(
-                query=q,
-                retriever=hybrid_retriever,
-                llm_model = llm,
-                system_prompt = system_prompt)
-            results.append({"query": q, f"{model}'s response": response})
+    for q in test_queries["queries"]:
+        model_1_response = run_chain(
+            query=q,
+            retriever=hybrid_retriever,
+            llm_model = models["model_1"],
+            system_prompt = system_prompt)
+        model_1_answer = model_1_response.split("</think>", 1)[-1].strip()
+
+        model_2_response = run_chain(
+            query=q,
+            retriever=hybrid_retriever,
+            llm_model = models["model_2"],
+            system_prompt = system_prompt)
+        model_2_answer = model_2_response.split("</think>", 1)[-1].strip()
+        results.append({"query": q, f"{model_1}\'s response": model_1_answer, f"{model_2}\'s response": model_2_answer})
 
     return pd.DataFrame(results)
 ############################## RAG + LLM UTILITIES ##############################
