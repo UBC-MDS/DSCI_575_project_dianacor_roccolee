@@ -70,8 +70,8 @@ def main():
     if args.query: #if there's a single query provided
         
         for model in args.models:
-            llm = build_llm_model(args.llm_model)
-
+            llm = build_llm_model(local_call = False,
+                                  api_model = args.llm_model)
             response = run_hybrid_chain(
                 query=args.query,
                 system_prompt=args.system_prompt,
@@ -83,7 +83,6 @@ def main():
         results_df = run_queries(
             test_queries_path=args.queries_csv,
             hybrid_retriever=hybrid_retriever,
-            models=args.models,
             system_prompt=args.system_prompt)
 
         results_df.to_csv(args.output_csv, index=False)

@@ -289,7 +289,7 @@ def build_llm_model(local_call = False, local_model = "Qwen/Qwen2.5-1.5B", max_t
             do_sample=True,
         )
         return HuggingFacePipeline(pipeline=generator)
-    else:
+   else:
         return ChatGroq(model=api_model)
 
 def run_hybrid_chain(
@@ -323,14 +323,16 @@ def run_hybrid_chain(
     return hybrid_rag_chain.invoke(query)
 
 
-def run_queries(test_queries_path, hybrid_retriever, models, system_prompt):
+def run_queries(test_queries_path, hybrid_retriever, system_prompt):
     """Iterate over every query/model combination as an example,
       collect responses, and return a DataFrame."""
+    
     test_queries = pd.read_csv(test_queries_path)
     results = []
+    models = {"Qwen3-32B": build_llm_model(local_call = False, api_model = "qwen/qwen3-32b"),
+            "Qwen2.5-1.5B": build_llm_model(local_call = True, local_model = "Qwen/Qwen2.5-1.5B", max_tokens=256)}
 
-    for model in models:
-        llm = build_llm_model(model)
+    for model, llm in models:
         for q in test_queries["queries"]:
             response = run_hybrid_chain(
                 query=q,
