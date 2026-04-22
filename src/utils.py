@@ -251,6 +251,15 @@ def build_context(docs):
     )
 
 
+def build_vect_retriever(faiss_folder = "data/processed/langchain_semantic_index",
+                        model= "sentence-transformers/all-MiniLM-L6-v2", 
+                        k=5):
+    """Load a FAISS vectorstore from disk and return a retriever that can be used in the RAG chain."""
+    embeddings = HuggingFaceEmbeddings(model_name= model)
+    vectorstore = FAISS.load_local(faiss_folder, embeddings, allow_dangerous_deserialization=True)
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
+    return retriever
+
 def build_hybrid_retriever(
     faiss_folder="data/processed/langchain_semantic_index",
     bm25_pkl_path="data/processed/bm25_retriever.pkl",
@@ -262,11 +271,9 @@ def build_hybrid_retriever(
     """Load pre-built BM25 and FAISS retrievers from disk and combine them into an EnsembleRetriever.    """
     
     #semantic load
-    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
-    vectorstore = FAISS.load_local(faiss_folder,
-                                embeddings, 
-                                allow_dangerous_deserialization=True)
-    semantic_retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
+    semantic_retriever = build_vect_retriever(faiss_folder = faiss_folder,
+                                              model=embedding_model,
+                                              k=k)
 
     #bm25 load
     with open(bm25_pkl_path, "rb") as f:
@@ -293,27 +300,24 @@ def build_llm_model(local_call = False, local_model = "Qwen/Qwen2.5-1.5B", max_t
    else:
         return ChatGroq(model=api_model)
 
-def run_hybrid_chain(
+def run_chain(
     query,
-    hybrid_retriever= None,
+    retriever= None,
     llm_model = None,
     system_prompt="""You are a helpful Amazon shopping assistant.
         Answer the question using ONLY the following context (which contains real product reviews + metadata).
         Always cite the product ASIN when possible. If the answer isn't in the context, say so.""",):
     
     """Run a single query through the hybrid RAG chain and return the LLM's response string."""
-    
-    if hybrid_retriever is None:
-        hybrid_retriever = build_hybrid_retriever()
 
-    docs = hybrid_retriever.invoke(query)
+    docs = retriever.invoke(query)
     context = build_context(docs)
     text_prompt = build_prompt(system_prompt, query, context)
     full_prompt = ChatPromptTemplate.from_template(text_prompt)
 
-    hybrid_rag_chain = (
+    rag_chain = (
         {
-            "context": hybrid_retriever | RunnableLambda(build_context),
+            "context": retriever | RunnableLambda(build_context),
             "query": RunnablePassthrough(),
         }
         | full_prompt
@@ -321,7 +325,7 @@ def run_hybrid_chain(
         | StrOutputParser()
     )
 
-    return hybrid_rag_chain.invoke(query)
+    return rag_chain.invoke(query)
 
 
 def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt):
@@ -335,9 +339,9 @@ def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt):
 
     for model, llm in models:
         for q in test_queries["queries"]:
-            response = run_hybrid_chain(
+            response = run_chain(
                 query=q,
-                hybrid_retriever=hybrid_retriever,
+                retriever=hybrid_retriever,
                 llm_model = llm,
                 system_prompt = system_prompt)
             results.append({"query": q, f"{model}'s response": response})

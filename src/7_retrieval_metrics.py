@@ -4,6 +4,8 @@ import faiss
 from sentence_transformers import SentenceTransformer
 import pickle
 from rank_bm25 import BM25Okapi
+
+
 index = faiss.read_index("data/processed/semantic_search_index.faiss")
 
 test_queries = pd.read_csv("results/queries.csv")
