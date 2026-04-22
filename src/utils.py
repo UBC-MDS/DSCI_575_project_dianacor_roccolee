@@ -10,11 +10,22 @@ from langchain_community.vectorstores import FAISS
 import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-
 import pandas as pd
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+
+import pickle
+
+
 
 nltk.download("stopwords", quiet=True)
 STOP_WORDS = set(stopwords.words("english"))
@@ -202,10 +213,128 @@ def print_top_results(top_k_docs):
 
 ############################## RAG pipeline Functions ##############################
 
+# def build_context(docs):
+#         return "\n\n".join(
+#             f"Product ASIN: {doc.metadata.get('parent_asin', 'N/A')}\n"
+#             f"Title: {doc.metadata.get('product_title', '')}\n"
+#             # f"Rating: {doc.metadata['rating']}/5]\n" # Need to add back as part of web app requirements
+#             for doc in docs
+#         )
+
+
+
+def build_prompt(system_prompt, query, context):
+    """Format the system prompt, retrieved context, and user query into a single LLM input string."""
+    return f"""{system_prompt}
+
+context:
+{context}
+
+question:
+{query}
+
+Answer based on the Amazon datasets from the context provided: """
+
 def build_context(docs):
-        return "\n\n".join(
-            f"Product ASIN: {doc.metadata.get('parent_asin', 'N/A')}\n"
-            f"Title: {doc.metadata.get('product_title', '')}\n"
-            # f"Rating: {doc.metadata['rating']}/5]\n" # Need to add back as part of web app requirements
-            for doc in docs
-        )
+    """Serialise a list of retrieved LangChain Documents into a readable context string for the LLM."""
+    return "\n\n".join(
+        f"Product ASIN: {doc.metadata.get('parent_asin', 'N/A')}\n"
+        f"Title: {doc.metadata.get('product_title', 'N/A')}\n"
+        f"Average Rating: {doc.metadata.get('average_rating', 'N/A')}\n"
+        f"Content: {doc.page_content}\n"
+        for doc in docs
+    )
+
+
+def build_hybrid_retriever(
+    faiss_folder="data/processed/langchain_semantic_index",
+    bm25_pkl_path="data/processed/bm25_retriever.pkl",
+    embedding_model="sentence-transformers/all-MiniLM-L6-v2",
+    bm25_weight=0.4,
+    semantic_weight=0.6,
+    k=5,
+):
+    """Load pre-built BM25 and FAISS retrievers from disk and combine them into an EnsembleRetriever.    """
+    
+    #semantic load
+    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    vectorstore = FAISS.load_local(faiss_folder,
+                                embeddings, 
+                                allow_dangerous_deserialization=True)
+    semantic_retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
+
+    #bm25 load
+    with open(bm25_pkl_path, "rb") as f:
+        bm25_retriever = pickle.load(f)
+    bm25_retriever.k = k
+
+    #hybrid ensemble
+    hybrid_retriever = EnsembleRetriever(
+        retrievers=[bm25_retriever, semantic_retriever],
+        weights=[bm25_weight, semantic_weight])
+
+    return hybrid_retriever
+
+def build_llm_model(model_name = "qwen/qwen3-32b"):
+    '''Small helper function to build the LLM model'''
+#  if ....
+    # generator = pipeline(
+    #                 "text-generation",
+    #                 model="Qwen/Qwen2.5-1.5B",
+    #                 max_new_tokens=256,
+    #                 do_sample=True,
+    #             )
+    # llm = HuggingFacePipeline(pipeline=generator)
+    return ChatGroq(model=model_name)
+
+
+
+def run_hybrid_chain(
+    query,
+    hybrid_retriever= None,
+    llm_model = None,
+    system_prompt="""You are a helpful Amazon shopping assistant.
+        Answer the question using ONLY the following context (which contains real product reviews + metadata).
+        Always cite the product ASIN when possible. If the answer isn't in the context, say so.""",):
+    
+    """Run a single query through the hybrid RAG chain and return the LLM's response string."""
+    
+    if hybrid_retriever is None:
+        hybrid_retriever = build_hybrid_retriever()
+
+    docs = hybrid_retriever.invoke(query)
+    context = build_context(docs)
+    text_prompt = build_prompt(system_prompt, query, context)
+    full_prompt = ChatPromptTemplate.from_template(text_prompt)
+
+    hybrid_rag_chain = (
+        {
+            "context": hybrid_retriever | RunnableLambda(build_context),
+            "query": RunnablePassthrough(),
+        }
+        | full_prompt
+        | llm_model
+        | StrOutputParser()
+    )
+
+    return hybrid_rag_chain.invoke(query)
+
+
+def run_queries(test_queries_path, hybrid_retriever, models, system_prompt):
+    """Iterate over every query/model combination as an example,
+      collect responses, and return a DataFrame."""
+    test_queries = pd.read_csv(test_queries_path)
+    results = []
+
+    for model in models:
+        llm = build_llm_model(model)
+        for q in test_queries["queries"]:
+            response = run_hybrid_chain(
+                query=q,
+                system_prompt=system_prompt,
+                hybrid_retriever=hybrid_retriever,
+                llm_model = llm,
+                system_prompt = system_prompt)
+            results.append({"query": q, f"{model}'s response": response})
+
+    return pd.DataFrame(results)

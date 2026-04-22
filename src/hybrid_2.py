@@ -1,0 +1,97 @@
+# import faiss
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+
+# from langchain_community.vectorstores import FAISS
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+# import pandas as pd
+# from langchain_core.documents import Document
+import argparse
+from utils import build_prompt, build_context, build_hybrid_retriever, build_llm_model, run_hybrid_chain, run_queries
+from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3
+
+
+def parse_args():
+    '''To accept arguments directly via bash/terminal commands'''
+    parser = argparse.ArgumentParser(description="Hybrid BM25 + Semantic RAG pipeline for Amazon product search.")
+    parser.add_argument("--faiss-folder",
+                        type=str,
+                        default="data/retrievers/langchain_semantic_index",
+                        help="Path to the folder containing the saved FAISS index.")
+    parser.add_argument("--bm25-pkl",
+                        type=str,
+                        default="data/retrievers/bm25_retriever.pkl",
+                        help="Path to the pickled BM25Retriever.")
+    parser.add_argument("--bm25-weight",
+                        type=float,
+                        default=0.4,
+                        help="Weight assigned to BM25 in the ensemble (semantic weight = 1 - bm25_weight).")
+    parser.add_argument( "--embedding-model",
+                        type=str,
+                        default="sentence-transformers/all-MiniLM-L6-v2",
+                        help="HuggingFace embedding model used to load the FAISS index." \
+                        " Must be the same as the model used to originally build the index.")
+    parser.add_argument("--llm-model",
+                        type=str,
+                        default="qwen/qwen3-32b",
+                        help="The Groq model for llm step.")
+    parser.add_argument("--k",
+                        type=int,
+                        default=5,
+                        help="Number of documents each retriever fetches per query.")
+    parser.add_argument("--query",
+                        type=str,
+                        default=None, #"1080p gaming monitor with high refresh rate and good color accuracy"
+                        help="Single query test string. Ignored if --queries-csv is provided.")
+    parser.add_argument("--queries-csv",
+                        type=str,
+                        default="results/queries.csv",
+                        help="Path to CSV file to run though all example queries.")
+    parser.add_argument("--output-csv",
+                        type=str,
+                        default="results/query_results_milestone2.csv",
+                        help="Path to write the results CSV.")
+    return parser.parse_args()
+
+def main():
+    """main script function of parsing args, build the retriever, run all queries, and saving results.    """
+    args = parse_args()
+
+    hybrid_retriever = build_hybrid_retriever(
+                        faiss_folder=args.faiss_folder,
+                        bm25_pkl_path=args.bm25_pkl,
+                        embedding_model=args.embedding_model,
+                        bm25_weight=args.bm25_weight,
+                        semantic_weight= 1 - args.bm25_weight,
+                        k=args.k)
+    
+    if args.query: #if there's a single query provided
+        
+        for model in args.models:
+            llm = build_llm_model(args.llm_model)
+
+            response = run_hybrid_chain(
+                query=args.query,
+                system_prompt=args.system_prompt,
+                hybrid_retriever=hybrid_retriever,
+                llm_model=llm)
+            
+            print(f"\nModel: {model} \n Response returned: {response}")
+    else:
+        results_df = run_queries(
+            test_queries_path=args.queries_csv,
+            hybrid_retriever=hybrid_retriever,
+            models=args.models,
+            system_prompt=args.system_prompt)
+
+        results_df.to_csv(args.output_csv, index=False)
+        print(f"Results saved to {args.output_csv}")
+
+        response = results_df
+
+    return response
+
+if __name__ == "__main__":
+    main()
