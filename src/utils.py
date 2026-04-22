@@ -337,7 +337,6 @@ def run_queries(test_queries_path, hybrid_retriever, system_prompt):
         for q in test_queries["queries"]:
             response = run_hybrid_chain(
                 query=q,
-                system_prompt=system_prompt,
                 hybrid_retriever=hybrid_retriever,
                 llm_model = llm,
                 system_prompt = system_prompt)

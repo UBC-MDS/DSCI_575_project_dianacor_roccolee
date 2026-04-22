@@ -25,11 +25,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Hybrid BM25 + Semantic RAG pipeline for Amazon product search.")
     parser.add_argument("--faiss-folder",
                         type=str,
-                        default="data/retrievers/langchain_semantic_index",
+                        default="data/retrievers/semantic_index",
                         help="Path to the folder containing the saved FAISS index.")
     parser.add_argument("--bm25-pkl",
                         type=str,
-                        default="data/retrievers/bm25_retriever.pkl",
+                        default="data/retrievers/bm25_index.pkl",
                         help="Path to the pickled BM25Retriever.")
     parser.add_argument("--bm25-weight",
                         type=float,
@@ -76,16 +76,15 @@ def main():
     
     if args.query: #if there's a single query provided
         
-        for model in args.models:
-            llm = build_llm_model(local_call = False,
-                                  api_model = args.llm_model)
-            response = run_hybrid_chain(
-                query=args.query,
-                # system_prompt=args.system_prompt, #custom prompt
-                hybrid_retriever=hybrid_retriever,
-                llm_model=llm)
-            
-            print(f"\nModel: {model} \n Response returned: {response}")
+        llm = build_llm_model(local_call = False,
+                                api_model = args.llm_model)
+        response = run_hybrid_chain(
+            query=args.query,
+            # system_prompt=args.system_prompt, #custom prompt
+            hybrid_retriever=hybrid_retriever,
+            llm_model=llm)
+        
+        print(f"Model: {args.llm_model}... Query: {args.query}, \n Response returned: {response}")
     else:
         results_df = run_queries(
             test_queries_path=args.queries_csv,
