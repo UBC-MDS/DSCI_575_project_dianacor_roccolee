@@ -18,6 +18,10 @@ from langchain_classic.retrievers import EnsembleRetriever
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
+from langchain_huggingface import HuggingFacePipeline
+from transformers import pipeline
+
+
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
@@ -275,19 +279,18 @@ def build_hybrid_retriever(
 
     return hybrid_retriever
 
-def build_llm_model(model_name = "qwen/qwen3-32b"):
-    '''Small helper function to build the LLM model'''
-#  if ....
-    # generator = pipeline(
-    #                 "text-generation",
-    #                 model="Qwen/Qwen2.5-1.5B",
-    #                 max_new_tokens=256,
-    #                 do_sample=True,
-    #             )
-    # llm = HuggingFacePipeline(pipeline=generator)
-    return ChatGroq(model=model_name)
-
-
+def build_llm_model(local_call = False, local_model = "Qwen/Qwen2.5-1.5B", max_tokens = 256, api_model = "qwen/qwen3-32b"):
+   ''' Small helper function to build the LLM model depending if local or not'''
+   if local_call:
+        generator = pipeline(
+            "text-generation",
+            model=local_model,
+            max_new_tokens=max_tokens,
+            do_sample=True,
+        )
+        return HuggingFacePipeline(pipeline=generator)
+    else:
+        return ChatGroq(model=api_model)
 
 def run_hybrid_chain(
     query,

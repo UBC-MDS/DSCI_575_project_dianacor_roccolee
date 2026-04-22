@@ -7,7 +7,6 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 import pandas as pd
 import pyarrow.parquet as pq
 from langchain_core.documents import Document
-from utils import *
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -18,6 +17,7 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
+from utils import *
 
 def build_prompt(SYSTEM_PROMPT, query, context):
     return f"""{SYSTEM_PROMPT}
