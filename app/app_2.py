@@ -1,22 +1,18 @@
-import faiss
+# ========================================== IMPORTS ==========================================
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from shiny import App, ui, reactive, render
-import numpy as np
-from sentence_transformers import SentenceTransformer
-import pyarrow.parquet as pq
 import pickle
+from shiny import App, ui, reactive, render
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from dotenv import load_dotenv, find_dotenv
 
-from utils_2 import (
-    bm25_search,
+from utils import (bm25_search,
     build_vect_retriever,
     build_hybrid_retriever,
     build_llm_model,
-    run_chain,
-)
+    run_chain,)
 
 load_dotenv(find_dotenv())
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -24,7 +20,7 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 if not groq_api_key:
     raise ValueError("Missing GROQ_API_KEY in .env file")
 
-############## GLOBAL VARS ##############
+# ========================================== Global Variables ==========================================
 RETRIEVER_FOLDER = "data/retrievers/"
 BM25_FILE_PATH = os.path.join(RETRIEVER_FOLDER, "bm25_index.pkl")
 SEM_INDEX_PATH = os.path.join(RETRIEVER_FOLDER, "semantic_index")
@@ -33,7 +29,9 @@ EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 BM_WEIGHT = 0.4
 SEMANTIC_WEIGHT = 0.6
 K = 5
-############################
+
+GROQ_MODEL = "qwen/qwen3-32b"
+# ========================================== Retrievers loading ==========================================
 
 # Semantic loading
 embeddings = HuggingFaceEmbeddings(model_name=EMBEDDINGS_MODEL)
@@ -53,11 +51,10 @@ hybrid_retriever = build_hybrid_retriever(
     semantic_weight=SEMANTIC_WEIGHT,
     k=K,
 )
-
 # LLM loading
-llm = build_llm_model()
+llm = build_llm_model(api_model = GROQ_MODEL)
 
-
+# ========================================== Shiny Code ==========================================
 # -- Result card ---------------------------------------------------------------
 # Hits are LangChain Documents: content in .page_content, fields in .metadata
 
@@ -167,12 +164,12 @@ app_ui = ui.page_fluid(
     ),
     ui.div(
         ui.div(
-            ui.h1(ui.HTML('Product <span>Search</span>'), class_="app-title"),
-            ui.p("Amazon product retrieval · Semantic & BM25 · RAG", class_="app-sub"),
+            ui.h1(ui.HTML('<span>Amazon Electronics</span> Product Search'), class_="app-title"),
+            ui.p("Amazon product retrieval using 3 approaches: Semantic, BM25, and a Hybrid RAG", class_="app-sub"),
             class_="app-header"
         ),
         ui.navset_tab(
-            ui.nav_panel("Search Only",
+            ui.nav_panel("Pure Retrieval Search Only",
                 ui.input_select(
                     "search_mode", None,
                     choices={"semantic": "Semantic", "bm25": "BM25"},
@@ -181,7 +178,7 @@ app_ui = ui.page_fluid(
                 ),
                 ui.div(
                     ui.input_text("search_query", None,
-                                  placeholder="e.g. best gaming headset for under $30",
+                                  placeholder="e.g. Best gaming headset for under $30",
                                   width="100%"),
                     ui.input_action_button("search_btn", "Search", class_="search-btn"),
                     class_="search-wrap"
@@ -191,7 +188,7 @@ app_ui = ui.page_fluid(
             ui.nav_panel("RAG Mode",
                 ui.div(
                     ui.input_text("rag_query", None,
-                                  placeholder="e.g. What's a good waterproof laptop?",
+                                  placeholder="e.g. What's a good waterproof laptop look like?",
                                   width="100%"),
                     ui.input_action_button("rag_btn", "Ask", class_="search-btn"),
                     class_="search-wrap"
@@ -215,7 +212,7 @@ def server(input, output, session):
     def search_results():
         query = input.search_query().strip()
         if not query:
-            return ui.div(ui.div("🔍", class_="icon"), ui.p("Enter a query and hit Search"), class_="empty-state")
+            return ui.div(ui.p("Enter a query and hit Search"), class_="empty-state")
 
         mode = input.search_mode()
         if mode == "semantic":
@@ -228,7 +225,7 @@ def server(input, output, session):
             label = "BM25"
 
         if not hits:
-            return ui.div(ui.div("🤷", class_="icon"), ui.p("No results found."), class_="empty-state")
+            return ui.div(ui.p("No results found."), class_="empty-state")
 
         return ui.div(
             ui.p(f"Top {len(hits)} results — {label} mode", class_="results-label"),
@@ -242,20 +239,19 @@ def server(input, output, session):
         query = input.rag_query().strip()
         if not query:
             return ui.div(
-                ui.div("💬", class_="icon"),
                 ui.p("Ask a question to get a RAG-powered answer"),
                 class_="empty-state"
             )
         try:
             answer = run_chain(query, retriever=hybrid_retriever, llm_model=llm)
             if not answer:
-                return ui.div(ui.div("😕", class_="icon"), ui.p("No answer generated."), class_="empty-state")
+                return ui.div(ui.p("No answer generated."), class_="empty-state")
             return ui.div(
                 ui.p("Answer", class_="rag-answer-label"),
                 ui.div(answer, class_="rag-answer"),
             )
         except Exception as e:
-            return ui.div(ui.div("❌", class_="icon"), ui.p(f"Error: {str(e)}"), class_="empty-state")
+            return ui.div(ui.p(f"Error: {str(e)}"), class_="empty-state")
 
 
 app = App(app_ui, server)
