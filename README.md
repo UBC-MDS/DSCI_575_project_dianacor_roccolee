@@ -69,24 +69,23 @@ conda activate amazon-recommender # or whatever the custom env name might be
 **Option B — Automated download**:
 ```bash
 # Via terminal in the root project directory 
-python ./src/direct_datadownload.py 
+python ./src/0_direct_datadownload.py 
 ```
 
-### 4. Convert to Parquet
+### 4. Convert to Parquet, merge sources & export subsets
 Run bellow code to convert from .jsonl / .json.gz to parquet:
 > This step might also take quite long due to the large files conversion and merging the two. Estimated to be ~10-15 minutes.
 
 ```bash
-python src/convert_parquet.py \
-  --reviews data/raw/Electronics.jsonl.gz \
-  --meta data/raw/meta_Electronics.jsonl.gz \
-  --subset_sample_size 500
+python src/1_convert_parquet.py 
+python src/2_merge_sources.py
+python src/3_export_subsets.py --sample-size 10000
 ```
 ### 5. Create Search Documents
 This prepares the processed data as document objects used by the retrieval systems.
 
 ```bash
-python ./src/create_documents.py
+python src/4_create_documents.py
 ```
 
 ### 6. Run Retrievals
@@ -94,32 +93,32 @@ python ./src/create_documents.py
 This creates and exports the required embeddings and index's for both retrieval methods. Both scripts accept a `--query` argument to test out a custom query for each respective method (ex: `<...>.py --query "sony headphones"`) - but this is a optional feature and not required.
 
 ```bash
-python ./src/bm25.py  # BM25 (keyword-based) search
-python ./src/semantic.py # Semantic search
+python src/5_bm25.py  # BM25 (keyword-based) search
+python src/6_semantic.py # Semantic search
 ```
 
-## 7. Run Basic Retrievals on Example Queries
-This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these 10 example queries provided 5 were chosen to compare, reflect and review the performance of the methods.  
+## 7. (OPTIONAL) Run Basic Retrievals on Example Queries
+This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods. 
+
+> Disclaimer: if this is re-run, the reflections made in `milestone1_discussion.md` may not match up since the sample size of the documents is now larger than when the analysis was done.
 
 ```bash
-python src/query_retrieval.py
+python src/7_retrieval_metrics.py
 ```
 
-## 8. Run RAG pipelines on Example Queries
-Step 1:
+## 8. (OPTIONAL) Run semantic RAG pipelines
 ```bash
-#run lang-chain specific retrievers first: 
-python src/langc_bm25.py
-python src/langc_semantic.py
+#To preview specific-semantic RAG with an example query, run:
+python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
 ```
 
-Step 2:
+## 8. Run Hybrid RAG pipelines on Example Queries
 ```bash
-#For specific-semantic RAG, run:
-# python src/rag_pipeline.py
+#To preview hybrid-semantic RAG with an example query, run:
+# python src/9_hybrid.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
 
-#For specific-hybrid RAG /running RAG on the same 10 Example Queries
-python src/hybrid.py
+# To run all the example Queries and export a comparison between
+python src/9_hybrid.py
 ```
 
 ### Run the Web App
@@ -129,4 +128,5 @@ You can also experiment with query search's through a web app by running:
 ```bash
 shiny run ./app/app.py
 ```
+
 Then open the URL shown in your terminal. If you want to experiment with a retriever-only search, stay in the "Search Only" tab and use the dropdown to select which retriever you would like to use for your query. If you would prefer to experiment with the Hybrid RAG pipeline, switch to the "RAG Mode" tab, enter your query and press the "Ask" button. **Note that this step may take a while**
