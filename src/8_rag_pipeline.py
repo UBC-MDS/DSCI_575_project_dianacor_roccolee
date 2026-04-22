@@ -11,7 +11,10 @@
 # from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
 # from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 import argparse
+import os
 from utils import build_llm_model, build_vect_retriever, run_chain
+from dotenv import load_dotenv, find_dotenv
+
 
 def parse_args():
     '''To accept arguments directly via bash/terminal commands'''
@@ -46,7 +49,7 @@ def main():
                                               model=args.embedding_model,
                                               k=args.k)
 
-    if args.local:
+    if args.local_model:
 
         llm = build_llm_model(local_call = True, local_model = "Qwen/Qwen2.5-1.5B",  max_tokens = 256)
         
@@ -58,6 +61,14 @@ def main():
         response_cut = response.split("Assistant:", 1)[-1].strip()
         print(response_cut)
     else:
+        #api key check
+        load_dotenv(find_dotenv())
+        groq_api_key = os.getenv("GROQ_API_KEY")
+
+        if not groq_api_key:
+            raise ValueError("Missing GROQ_API_KEY in .env file")
+        
+        #process query with API model
         llm = build_llm_model(local_call = False, api_model = "qwen/qwen3-32b")
         response = run_chain(args.query,
                 retriever= semantic_retriever,
@@ -66,3 +77,5 @@ def main():
                 )
         print(response)
 
+if __name__ == "__main__":
+    main()
