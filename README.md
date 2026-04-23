@@ -36,11 +36,24 @@ A diagram of the workflow can be seen below:
 ### Model Choice for RAG:
 For the RAG workflow, we use Qwen/Qwen2.5-0.5B as our generative model. This was chosen to try balance performance with our local compute constraints — the larger 1.5B variant of the same family was ruled out due to response times being too slow within the Shiny app. As a decoder-only model, it is well suited for the text generation step in a RAG pipeline. Alternative decoder-only models that could be use include `microsoft/phi-2`, `microsoft/phi-3-mini-4k-instruct`, and `google/gemma-2-2b-it, but they are subject to local computing power.
 
+### API key steps (in order to run RAG):
+For workflow step 7 and beyond an API key from [ChatGroq](https://console.groq.com/home?_gl=1*1btwinb*_gcl_au*MTQ3OTE0MzAzMy4xNzc2ODk3MTM3*_ga*MTA3MjM5MTQ1LjE3NzY4OTcxMzM.*_ga_4TD0X2GEZG*czE3NzY5MDQ0OTkkbzMkZzAkdDE3NzY5MDQ0OTkkajYwJGwwJGgw) is needed. Here are the steps to set it up:
+1. Create an account on the ChatGroq website, linked above
+2. Navigate to the "API Keys" tab
+3. Click on the "Create an API Key" button on the top right corner of the screen
+4. Enter an appropriate Display Name for the key (Just for display purposes, for example "575 Project Demo") and set an expiration date from the dropdown menu (for example, 90 days).
+5. Click "Submit"
+6. Copy down the API key. **It will not be shown again, so make sure you keep a note of it**
+7. On your local copy of this repo, create a new file called `.env`
+8. Paste this in the file, replacing <your API key here> with the API key you noted down from the previous step
+GROQ_API_KEY=<your API key here>
+9. Save the file
+
 ## Recreating Project Workflow
 
 > NOTE: If files in `data/processed` are removed -> Steps 1-4 must be done first before running the milestone1_exploration (requires parquet format).
 
-> NOTE: If short on time: steps 3 & 4 (which are very time consuming) can be skipped. This works since subset versions of data sources (already converted) are already exported to the repo - and the pipeline currently just uses a subset due to time constraints.
+> NOTE: Make sure that a Groq API key has been created and added to local .env file before continuing 
 
 ### 1. Clone the Repository
 Clone the repo into the desired folder using this command in a new terminal window:
@@ -100,24 +113,11 @@ python src/6_semantic.py # Semantic search
 ## 7. (OPTIONAL) Run Basic Retrievals on Example Queries
 This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods. 
 
-> Disclaimer: if this is re-run, the reflections made in `milestone1_discussion.md` may not match up since the sample size of the documents is now larger than when the analysis was done.
+> Disclaimer: if this is re-run, the reflections made in `milestone1/2_discussion.md` may not match up since the sample size of the documents is now larger than when the analysis was done.
 
 ```bash
 python src/7_retrieval_metrics.py
 ```
-
-## Quick Note:
-For the remaining steps (including the optional step), an API key from [ChatGroq](https://console.groq.com/home?_gl=1*1btwinb*_gcl_au*MTQ3OTE0MzAzMy4xNzc2ODk3MTM3*_ga*MTA3MjM5MTQ1LjE3NzY4OTcxMzM.*_ga_4TD0X2GEZG*czE3NzY5MDQ0OTkkbzMkZzAkdDE3NzY5MDQ0OTkkajYwJGwwJGgw) is needed. Here are the steps to set it up:
-1. Create an account on the ChatGroq website, linked above
-2. Navigate to the "API Keys" tab
-3. Click on the "Create an API Key" button on the top right corner of the screen
-4. Enter an appropriate Display Name for the key (Just for display purposes, for example "575 Project Demo") and set an expiration date from the dropdown menu (for example, 90 days).
-5. Click "Submit"
-6. Copy down the API key. **It will not be shown again, so make sure you keep a note of it**
-7. On your local copy of this repo, create a new file called `.env`
-8. Paste this in the file, replacing <your API key here> with the API key you noted down from the previous step
-GROQ_API_KEY=<your API key here>
-9. Save the file
 
 ## 8. (OPTIONAL) Run semantic RAG pipelines
 ```bash
@@ -134,7 +134,9 @@ python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rat
 python src/9_hybrid.py
 ```
 
-### 10. Run the Web App
+### 10. Run the Web App Locally
+> [!TIP]
+> A online hosted version of this app can also be found in [posit cloud connect](https://roccolee18-amazon-electronics-recommender-app.share.connect.posit.cloud). This is the new feature selected and implemented as part of the final submission. There are no required instructions or additional steps to run the improved application, just click on the link above.
 
 You can also experiment with query search's through a web app by running:
 
@@ -143,4 +145,5 @@ cp src/utils.py app/utils.py
 shiny run ./app/app.py
 ```
 
-Then open the URL shown in your terminal. If you want to experiment with a retriever-only search, stay in the "Search Only" tab and use the dropdown to select which retriever you would like to use for your query. If you would prefer to experiment with the Hybrid RAG pipeline, switch to the "RAG Mode" tab, enter your query and press the "Ask" button. **Note that this step may take a while**
+Then open the URL shown in your terminal. If you want to experiment with a retriever-only search, stay in the "Search Only" tab and use the dropdown to select which retriever you would like to use for your query. If you would prefer to experiment with the Hybrid RAG pipeline, switch to the "RAG Mode" tab, enter your query and press the "Ask" button.
+
