@@ -31,7 +31,7 @@ def parse_args():
                         " Must be the same as the model used to originally build the index.")
     parser.add_argument("--queries-csv",
                         type=str,
-                        default="results/queries.csv",
+                        default="results/10_queries_milestone_1.csv",
                         help="Path to CSV file to run though all example queries.")
     parser.add_argument("--k",
                         type=int,
@@ -42,7 +42,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    test_queries = pd.read_csv("results/queries.csv")
+    test_queries = pd.read_csv(args.query_csv)
 
     semantic_retriever = build_vect_retriever(faiss_folder = args.faiss_folder,
                             model= args.embedding_model, 
@@ -76,4 +76,4 @@ if __name__ == "__main__":
             })
 
     master_retrieval = pd.DataFrame(master_retrieval)
-    master_retrieval.to_csv('results/query_results_milestone1.csv')
+    master_retrieval.to_csv('results/10_query_results_milestone1.csv')
