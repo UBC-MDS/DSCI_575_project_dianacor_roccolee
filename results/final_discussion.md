@@ -29,7 +29,7 @@
     >- Never recommend a product that is not present in the provided context
     >"""
 
-- Outputs: The summarized & simplified can be found below. The full output to the test queries can be found in `./results/query_results_milestone2.csv`.
+- Outputs: The summarized & simplified can be found below. The full output to the test queries can be found in `./results/5_query_results_milestone2.csv`.
 
 | Query | Qwen/Qwen3-32B Response | OpenAI/GPT-OSS-120B Response |
 |-------|------------------------|------------------------------|
@@ -39,7 +39,7 @@
 | super fast wireless charger | **B000KB30UQ** ASAITEKE Phone to HDMI Adapter (5.0★): Includes wireless car charger supporting 10W for Samsung Galaxy and 7.5W for iPhone. Features overcharge, temperature, and short-circuit protection. No dedicated standalone wireless chargers found in context. | **B000KB30UQ** ASAITEKE Phone to HDMI Adapter (5.0★): Doubles as wireless fast-charging car mount. Supports 10W for Samsung Galaxy S9/S8/S7/Note 8 and 7.5W for iPhone X/8. Includes safety protections, works with most cases. Perfect 5-star rating from users. |
 | white gaming mouse for left handed people | No white left-handed gaming mice found. Closest option: **B08HVGX6QX** RATEL Wireless Mouse (4.8★) — ambidextrous, symmetric design, mint color, power-saving modes, compact and portable. | Insufficient review data to answer confidently. |
 
-- Key observations (found in ./results/query_results_milestone2.csv):
+- Key observations (found in ./results/5_query_results_milestone2.csv):
 
 For most test queries, both models performed well in giving coherent answers based on the provided context. Both models followed the guidelines given in the system prompt well and recommended several products that fit the user's query. The main difference between the responses of the models is in the reasoning for recommending certain products over others. The Qwen model seems to prefer spelling out each reason in sentences, while the OpenAI model perfers to lay out its reasoning in tables and bullet points, which are probably easier for the user to read. The difference in the number of parameters started to show in the forth query for "super fast wireless chargers", where the OpenAI model was able to infer more from the adjectives in the query to return multiple products, while the Qwen model was only able to find one product that matched the query before mentioning that the given context didn't include any other products that satisfy the user's query. Finally, for the most complex query of "white gaming mouse for left handed people", both models mentioned that the given context didn't contain a product that matched the query, however the Qwen model offered a product that it thought was a good substitute, while mentioning that the substitute didn't fit the "white" or "gaming" criteria of the query.
 
@@ -62,7 +62,7 @@ Given that both models performed decently well, but the Qwen model contains abou
 ### Documentation Update
 - update script name references to match new names
 - add instructions for the groq api key
-- mentioned increased sample size + a disclaimer for re-running pre-final submission scripts (may no longer match the outputs mentioned in the `____-discussion.md`
+- mentioned increased sample size + a disclaimer for re-running pre-final submission scripts may no longer match the outputs mentioned in the `m1/m2-discussion.md`
 - mention the new connect posit cloud website as the feature implemented and the online-version of the local app
 
 ### Code Quality Changes

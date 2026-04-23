@@ -5,6 +5,7 @@ import argparse
 from utils import build_hybrid_retriever, build_llm_model, run_chain, hybrid_run_queries
 from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3
 from dotenv import load_dotenv, find_dotenv
+import pandas as pd
 
 load_dotenv(find_dotenv())
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -60,11 +61,19 @@ def parse_args():
                         help="Single query test string. Ignored if --queries-csv is provided.")
     parser.add_argument("--queries-csv",
                         type=str,
-                        default="results/queries.csv",
+                        default="results/5_queries_milestone_2.csv",
                         help="Path to CSV file to run though all example queries.")
-    parser.add_argument("--output-csv",
+    parser.add_argument("--compare-models",
+                        type=lambda x: x.lower() == 'true',
+                        default=True,
+                        help="Switch flag to just reflect on hybrid (if False) or btw 2 different models (if True)")
+    parser.add_argument("--output-query-csv",
                         type=str,
-                        default="results/query_results_milestone2.csv",
+                        default="results/5_query_results_milestone2.csv",
+                        help="Path to write the results CSV.")
+    parser.add_argument("--output-compare-csv",
+                        type=str,
+                        default="results/5_query_results_milestonefinal.csv",
                         help="Path to write the results CSV.")
     return parser.parse_args()
 
@@ -91,7 +100,7 @@ if __name__ == "__main__":
             llm_model=llm)
         
         print(f"Model: {using_model}... Query: {args.query}, \n Response returned: {response}")
-    else:
+    elif args.compare_models:
         results_df = hybrid_run_queries(
             test_queries_path=args.queries_csv,
             hybrid_retriever=hybrid_retriever,
@@ -99,7 +108,25 @@ if __name__ == "__main__":
             model_1 = args.llm_model, 
             model_2 = args.llm_model_2)
 
-        results_df.to_csv(args.output_csv, index=False)
-        print(f"Results saved to {args.output_csv}")
+        results_df.to_csv(args.output_compare_csv, index=False)
+        print(f"Results saved to {args.output_compare_csv}")
+
+        response = results_df
+    else:
+        test_queries = pd.read_csv(args.queries_csv)
+        results = []
+        llm = build_llm_model(local_call = False,
+                                api_model = args.llm_model)
+                                
+        for q in test_queries["queries"]:
+            model_response = run_chain(
+                query=q,
+                retriever=hybrid_retriever,
+                llm_model = llm,
+                system_prompt = SYSTEM_PROMPT_2)
+            model_response_cut = model_response.split("</think>", 1)[-1].strip()
+            results.append({"query": q, "Output Response": model_response_cut})
+        results_df = pd.DataFrame(results)
+        results_df.to_csv(args.output_query_csv, index=False)
 
         response = results_df

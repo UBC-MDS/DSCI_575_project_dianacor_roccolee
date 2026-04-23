@@ -1,6 +1,6 @@
 # Amazon Electronics Review Search
 
-This repo uses data of Amazon product & their reviews (specifically for the Electronics category) to compare 2 different retrievals systems: BM25 (keyword-based) and Semantic (embedding-based), to search and compare product results via user queries.
+This repo uses data of Amazon product & their reviews (specifically for the Electronics category) to compare 3 different retrievals systems: BM25 (keyword-based) and Semantic (embedding-based), and a hybrid RAG (BM25 + semantic + LLM for more natural language processing) to search and compare product results via user queries.
 
 ## Description of Dataset
 
@@ -98,7 +98,7 @@ python src/6_semantic.py # Semantic search
 ```
 
 ## 7. (OPTIONAL) Run Basic Retrievals on Example Queries
-This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods. 
+This runs examples queries that are available in `results/5_queries_milestone_1.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/5_query_results_milestone_1.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods. 
 
 > Disclaimer: if this is re-run, the reflections made in `milestone1_discussion.md` may not match up since the sample size of the documents is now larger than when the analysis was done.
 
@@ -130,8 +130,11 @@ python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rat
 #To preview hybrid-semantic RAG with an example query, run:
 # python src/9_hybrid.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
 
-# To run all the example Queries and export a comparison between
-python src/9_hybrid.py
+# To run all the example queries and export a comparison between qwen/qwen3-32b and openai/gpt-oss-120b models (for final submission model comparison)
+python src/9_hybrid.py 
+
+# To run all the example queries and just get a csv of all the outputs (ex for Milestone2)
+# python src/9_hybrid.py --compare-models False
 ```
 
 ### 10. Run the Web App
