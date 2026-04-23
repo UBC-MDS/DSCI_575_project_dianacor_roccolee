@@ -42,7 +42,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    test_queries = pd.read_csv(args.query_csv)
+    test_queries = pd.read_csv(args.queries_csv)
 
     semantic_retriever = build_vect_retriever(faiss_folder = args.faiss_folder,
                             model= args.embedding_model, 

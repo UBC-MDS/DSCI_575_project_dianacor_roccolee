@@ -34,7 +34,9 @@ A diagram of the workflow can be seen below:
 ![](RAG_workflow.png)
 
 ### Model Choice for RAG:
-For the RAG workflow, we use Qwen/Qwen2.5-0.5B as our generative model. This was chosen to try balance performance with our local compute constraints — the larger 1.5B variant of the same family was ruled out due to response times being too slow within the Shiny app. As a decoder-only model, it is well suited for the text generation step in a RAG pipeline. Alternative decoder-only models that could be use include `microsoft/phi-2`, `microsoft/phi-3-mini-4k-instruct`, and `google/gemma-2-2b-it, but they are subject to local computing power.
+For the RAG workflow, when local we use Qwen/Qwen2.5-0.5B as our generative model. This was chosen to try balance performance with our local compute constraints — the larger 1.5B variant of the same family was ruled out due to response times being too slow within the Shiny app. As a decoder-only model, it is well suited for the text generation step in a RAG pipeline. Alternative decoder-only models that could be use include `microsoft/phi-2`, `microsoft/phi-3-mini-4k-instruct`, and `google/gemma-2-2b-it`, but they are subject to local computing power. 
+
+For the final submission, however, we also switched to using an Groq API keys to improve accuracy and speed. Specifically we used the `qwen/qwen3-32b` model for its better performance (after comparing to another model `openai/gpt-oss-120b` as mentioned in `final_discussion.md`).
 
 ### API key steps (in order to run RAG):
 For workflow step 7 and beyond an API key from [ChatGroq](https://console.groq.com/home?_gl=1*1btwinb*_gcl_au*MTQ3OTE0MzAzMy4xNzc2ODk3MTM3*_ga*MTA3MjM5MTQ1LjE3NzY4OTcxMzM.*_ga_4TD0X2GEZG*czE3NzY5MDQ0OTkkbzMkZzAkdDE3NzY5MDQ0OTkkajYwJGwwJGgw) is needed. Here are the steps to set it up:
@@ -92,7 +94,7 @@ Run bellow code to convert from .jsonl / .json.gz to parquet:
 ```bash
 python src/1_convert_parquet.py 
 python src/2_merge_sources.py
-python src/3_export_subsets.py --sample-size 10000
+python src/3_export_subset.py --sample-size 10000
 ```
 ### 5. Create Search Documents
 This prepares the processed data as document objects used by the retrieval systems.
@@ -110,8 +112,8 @@ python src/5_bm25.py  # BM25 (keyword-based) search
 python src/6_semantic.py # Semantic search
 ```
 
-## 7. (OPTIONAL) Run Basic Retrievals on Example Queries
-This runs examples queries that are available in `results/5_queries_milestone_1.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/5_query_results_milestone_1.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods. 
+## 7. (Optional) Run Basic Retrievals on Example Queries
+This runs examples queries that are available in `results/5_queries_milestone_1.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/5_query_results_milestone_1.csv`. From these example queries provided a handful were chosen to compare, reflect and review the performance of the methods.
 
 > Disclaimer: if this is re-run, the reflections made in `milestone1/2_discussion.md` may not match up since the sample size of the documents is now larger than when the analysis was done.
 
@@ -119,7 +121,7 @@ This runs examples queries that are available in `results/5_queries_milestone_1.
 python src/7_retrieval_metrics.py
 ```
 
-## 8. (OPTIONAL) Run semantic RAG pipelines
+## 8. (Optional) Run semantic RAG pipelines
 ```bash
 #To preview specific-semantic RAG with an example query, run:
 python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
@@ -144,7 +146,7 @@ python src/9_hybrid.py
 You can also experiment with query search's through a web app by running:
 
 ```bash
-cp src/utils.py app/utils.py
+cp src/utils.py app/utils.py # This might ask if it's ok to overwrite the current utils.py. Say yes, it's intended to keep consistent
 shiny run ./app/app.py
 ```
 
