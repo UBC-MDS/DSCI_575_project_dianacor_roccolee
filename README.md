@@ -106,13 +106,26 @@ This runs examples queries that are available in `results/queries.csv` (this can
 python src/7_retrieval_metrics.py
 ```
 
+## Quick Note:
+For the remaining steps (including the optional step), an API key from [ChatGroq](https://console.groq.com/home?_gl=1*1btwinb*_gcl_au*MTQ3OTE0MzAzMy4xNzc2ODk3MTM3*_ga*MTA3MjM5MTQ1LjE3NzY4OTcxMzM.*_ga_4TD0X2GEZG*czE3NzY5MDQ0OTkkbzMkZzAkdDE3NzY5MDQ0OTkkajYwJGwwJGgw) is needed. Here are the steps to set it up:
+1. Create an account on the ChatGroq website, linked above
+2. Navigate to the "API Keys" tab
+3. Click on the "Create an API Key" button on the top right corner of the screen
+4. Enter an appropriate Display Name for the key (Just for display purposes, for example "575 Project Demo") and set an expiration date from the dropdown menu (for example, 90 days).
+5. Click "Submit"
+6. Copy down the API key. **It will not be shown again, so make sure you keep a note of it**
+7. On your local copy of this repo, create a new file called `.env`
+8. Paste this in the file, replacing <your API key here> with the API key you noted down from the previous step
+GROQ_API_KEY=<your API key here>
+9. Save the file
+
 ## 8. (OPTIONAL) Run semantic RAG pipelines
 ```bash
 #To preview specific-semantic RAG with an example query, run:
 python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
 ```
 
-## 8. Run Hybrid RAG pipelines on Example Queries
+## 9. Run Hybrid RAG pipelines on Example Queries
 ```bash
 #To preview hybrid-semantic RAG with an example query, run:
 # python src/9_hybrid.py --query "1080p gaming monitor with high refresh rate and good color accuracy"
@@ -121,7 +134,7 @@ python src/8_rag_pipeline.py --query "1080p gaming monitor with high refresh rat
 python src/9_hybrid.py
 ```
 
-### Run the Web App
+### 10. Run the Web App
 
 You can also experiment with query search's through a web app by running:
 
